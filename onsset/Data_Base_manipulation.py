@@ -8,6 +8,7 @@ Created on Tue Apr 14 21:34:50 2020
 
 import pandas as pd
 from random import shuffle
+import numpy as no
 
 #%%
 data = pd.read_csv('Bolivia/Database_new.csv')  
@@ -67,11 +68,6 @@ test['ElecStart'] =  data['ElecStart']
 test['FinalElecCode2012'] = data['FinalElecCode2012']
 
 
-
-
-
-
-
 #%%
 # Create a new data set with lower electricity penetration
 
@@ -90,7 +86,10 @@ data['ElecPopCalib'] = data['ElecPopCalib']*Modificator
 data.to_csv('Bolivia/Database_lower_ElecPopCalib.csv')
 
 
+#%%
 
+
+data = pd.read_csv('Bolivia/Database_new_1.csv')  
 
 
 
