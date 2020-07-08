@@ -176,7 +176,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
         # RUN_PARAM: Fill in general and technology specific parameters (e.g. discount rate, losses etc.)
         
-        technologies, transportation_cost = technology_creation(start_year, end_year, 
+        technologies, transportation_cost, tech_constraints = technology_creation(start_year, end_year, 
                                                                 grid_price, specs_data, diesel_price, 
                                                                 pv_capital_cost_adjust)
 

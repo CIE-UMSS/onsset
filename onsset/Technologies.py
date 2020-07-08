@@ -230,8 +230,29 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 'efficiency': 0.28,
                                 'fuel_LHV': 9.9445485,
                                 'diesel_truck_consumption': 14,
-                                'diesel_truck_volume': 300})    
+                                'diesel_truck_volume': 300})   
+    
+    # Constraints
+    
+    tech_constraints = []
+    
+    tech_constraints.append({'type': 'minor',
+                             'name': 'MG_Diesel1',
+                             'Column_name': 'Elevation',
+                             'bound'      : '800'
+                                })
+    tech_constraints.append({'type'       : 'mayor',
+                             'name'       : 'MG_Diesel1',
+                             'Column_name': 'Elevation', 
+                             'bound'      : '800'
+                                })
+    
+    tech_constraints.append({'type': 'mayor',
+                             'name': 'MG_Diesel1',
+                             'Column_name': 'Y_deg', 
+                             'bound'      : '-17'                          
+                                })
         
     
-    return technologies, transportation_cost
+    return technologies, transportation_cost, tech_constraints
     
