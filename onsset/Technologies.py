@@ -40,24 +40,39 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                    capital_cost={float("inf"): 5000},
                                    om_costs=0.02,
                                    mini_grid=True,
-                                   name = 'MG_Hydro1',
+                                   name = 'MG_Hydro_',
                                    code = 7)
     
     technologies.append(mg_hydro_calc)
 
-    mg_hydro_calc1 = Technology(om_of_td_lines=0.04,
-                                   distribution_losses=0.03,
-                                   connection_cost_per_hh=25,
-                                   base_to_peak_load_ratio=1,
-                                   capacity_factor=0.6,
-                                   tech_life=30,
-                                   capital_cost={float("inf"): 2000},
-                                   om_costs=0.01,
-                                   mini_grid=True,
-                                   name = 'MG_Hydro2',
-                                   code = 7)
-    
-    technologies.append(mg_hydro_calc1)
+#    mg_hydro_calc1 = Technology(om_of_td_lines=0.04,
+#                                   distribution_losses=0.03,
+#                                   connection_cost_per_hh=25,
+#                                   base_to_peak_load_ratio=1,
+#                                   capacity_factor=0.6,
+#                                   tech_life=30,
+#                                   capital_cost={float("inf"): 2000},
+#                                   om_costs=0.01,
+#                                   mini_grid=True,
+#                                   name = 'MG_Hydro_Amazonia',
+#                                   code = 7)
+#    
+#    technologies.append(mg_hydro_calc1)
+#
+#
+#    mg_hydro_calc2 = Technology(om_of_td_lines=0.04,
+#                                   distribution_losses=0.03,
+#                                   connection_cost_per_hh=25,
+#                                   base_to_peak_load_ratio=1,
+#                                   capacity_factor=0.6,
+#                                   tech_life=30,
+#                                   capital_cost={float("inf"): 1500},
+#                                   om_costs=0.01,
+#                                   mini_grid=True,
+#                                   name = 'MG_Hydro_Chaco',
+#                                   code = 7)
+#    
+#    technologies.append(mg_hydro_calc2)
 
 
    
@@ -69,24 +84,37 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                   om_costs=0.02,
                                   tech_life=20,
                                   mini_grid=True,
-                                  name = 'MG_Wind1',
+                                  name = 'MG_Wind_',
                                   code = 6)
     
     technologies.append(mg_wind_calc)
 
-    mg_wind_calc1 = Technology(om_of_td_lines = 0.02,
-                                  distribution_losses = 0.05,
-                                  connection_cost_per_hh = 225,
-                                  base_to_peak_load_ratio = 0.55,
-                                  capital_cost={float("inf"): 2000},
-                                  om_costs=0.01,
-                                  tech_life=15,
-                                  mini_grid=True,
-                                  name = 'MG_Wind2',
-                                  code = 6)
-    
-    technologies.append(mg_wind_calc1)
-
+#    mg_wind_calc1 = Technology(om_of_td_lines = 0.02,
+#                                  distribution_losses = 0.05,
+#                                  connection_cost_per_hh = 225,
+#                                  base_to_peak_load_ratio = 0.55,
+#                                  capital_cost={float("inf"): 2000},
+#                                  om_costs=0.01,
+#                                  tech_life=15,
+#                                  mini_grid=True,
+#                                  name = 'MG_Wind_Amazonia',
+#                                  code = 6)
+#    
+#    technologies.append(mg_wind_calc1)
+#
+#
+#    mg_wind_calc2 = Technology(om_of_td_lines = 0.02,
+#                                  distribution_losses = 0.05,
+#                                  connection_cost_per_hh = 225,
+#                                  base_to_peak_load_ratio = 0.55,
+#                                  capital_cost={float("inf"): 2500},
+#                                  om_costs=0.01,
+#                                  tech_life=15,
+#                                  mini_grid=True,
+#                                  name = 'MG_Wind_Chaco',
+#                                  code = 6)
+#    
+#    technologies.append(mg_wind_calc2)
 
 
     mg_pv_calc = Technology(om_of_td_lines=0.03,
@@ -97,7 +125,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 om_costs=0.02,
                                 capital_cost={float("inf"): 3500},
                                 mini_grid=True,
-                                name = 'MG_PV1',
+                                name = 'MG_PV_Highlands',
                                 code = 5)
 
     technologies.append(mg_pv_calc)
@@ -110,11 +138,23 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 om_costs = 0.01,
                                 capital_cost = {float("inf"): 3000},
                                 mini_grid = True,
-                                name = 'MG_PV2',
+                                name = 'MG_PV_Amazonia',
                                 code = 5)
 
     technologies.append(mg_pv_calc1)    
     
+    mg_pv_calc2 = Technology(om_of_td_lines = 0.03,
+                                distribution_losses = 0.03,
+                                connection_cost_per_hh = 225,
+                                base_to_peak_load_ratio = 0.5,
+                                tech_life = 20,
+                                om_costs = 0.01,
+                                capital_cost = {float("inf"): 3000},
+                                mini_grid = True,
+                                name = 'MG_PV_Chaco',
+                                code = 5)
+
+    technologies.append(mg_pv_calc2)    
     
     sa_pv_calc = Technology(base_to_peak_load_ratio = 0.9,
                                 tech_life = 15,
@@ -126,7 +166,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                               0.020: 20000 * pv_capital_cost_adjust
                                               },
                                 standalone=True,
-                                name = 'SA_PV1',
+                                name = 'SA_PV_Highlands',
                                 code = 3)
     
     technologies.append(sa_pv_calc)
@@ -141,10 +181,26 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                               0.020: 15000 * pv_capital_cost_adjust
                                               },
                                 standalone=True,
-                                name = 'SA_PV2',
+                                name = 'SA_PV_Amazonia',
                                 code = 3)
     
     technologies.append(sa_pv_calc1)
+    
+    
+    sa_pv_calc2 = Technology(base_to_peak_load_ratio=0.8,
+                                tech_life=20,
+                                om_costs=0.04,
+                                capital_cost={float("inf"): 6070 * pv_capital_cost_adjust,
+                                              0.200: 8780 * pv_capital_cost_adjust,
+                                              0.100: 10660 * pv_capital_cost_adjust,
+                                              0.050: 12050 * pv_capital_cost_adjust,
+                                              0.020: 15000 * pv_capital_cost_adjust
+                                              },
+                                standalone=True,
+                                name = 'SA_PV_Chaco',
+                                code = 3)
+    
+    technologies.append(sa_pv_calc2)
 
     mg_diesel_calc = Technology(om_of_td_lines=0.02,
                                     distribution_losses=0.05,
@@ -155,7 +211,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     om_costs=0.1,
                                     capital_cost={float("inf"): 1000},
                                     mini_grid=True,
-                                    name = 'MG_Diesel1',
+                                    name = 'MG_Diesel_Highlands',
                                     code = 4)
     
     technologies.append(mg_diesel_calc)
@@ -169,90 +225,190 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     om_costs=0.08,
                                     capital_cost={float("inf"): 1500},
                                     mini_grid=True,
-                                    name = 'MG_Diesel2',
+                                    name = 'MG_Diesel_Amazonia',
                                     code = 4)
     
     technologies.append(mg_diesel_calc1)
 
-    sa_diesel_calc = Technology(base_to_peak_load_ratio=0.5,
-                                    capacity_factor=0.5,
-                                    tech_life=10,
-                                    om_costs=0.1,
-                                    capital_cost={float("inf"): 938},
+    mg_diesel_calc2 = Technology(om_of_td_lines=0.05,
+                                    distribution_losses=0.07,
+                                    connection_cost_per_hh=100,
+                                    base_to_peak_load_ratio=0.5,
+                                    capacity_factor=0.8,
+                                    tech_life=20,
+                                    om_costs=0.08,
+                                    capital_cost={float("inf"): 1500},
+                                    mini_grid=True,
+                                    name = 'MG_Diesel_Chaco',
+                                    code = 4)
+    
+    technologies.append(mg_diesel_calc2)
+
+    sa_diesel_calc = Technology(base_to_peak_load_ratio=0.8,
+                                    capacity_factor=0.6,
+                                    tech_life=20,
+                                    om_costs=0.05,
+                                    capital_cost={float("inf"): 1200},
                                     standalone=True,
-                                    name = 'SA_Diesel1',
+                                    name = 'SA_Diesel_Highlands',
                                     code = 2)
     
     technologies.append(sa_diesel_calc)
-
+    
     sa_diesel_calc1 = Technology(base_to_peak_load_ratio=0.8,
                                     capacity_factor=0.6,
                                     tech_life=20,
                                     om_costs=0.05,
                                     capital_cost={float("inf"): 1200},
                                     standalone=True,
-                                    name = 'SA_Diesel2',
+                                    name = 'SA_Diesel_Amazonia',
                                     code = 2)
     
     technologies.append(sa_diesel_calc1)
-
+    
+    sa_diesel_calc2 = Technology(base_to_peak_load_ratio=0.8,
+                                    capacity_factor=0.8,
+                                    tech_life=20,
+                                    om_costs=0.05,
+                                    capital_cost={float("inf"): 1200},
+                                    standalone=True,
+                                    name = 'SA_Diesel_Chaco',
+                                    code = 2)
+    
+    technologies.append(sa_diesel_calc2)
     
     
     transportation_cost = []
     
     transportation_cost.append({'diesel_price': diesel_price,
                                 'fuel_price': diesel_price,
-                                'tech_name': 'MG_Diesel1',
+                                'tech_name': 'MG_Diesel_Highlands',
                                 'efficiency': 0.33,
-                                'fuel_LHV': 9.9445485,
+                                'fuel_LHV': 9.9,
                                 'diesel_truck_consumption': 33.7,
                                 'diesel_truck_volume': 15000})
         
     transportation_cost.append({'diesel_price': diesel_price,
                                 'fuel_price': diesel_price,
-                                'tech_name': 'MG_Diesel2',
+                                'tech_name': 'MG_Diesel_Amazonia',
                                 'efficiency': 0.33,
-                                'fuel_LHV': 9.9445485,
+                                'fuel_LHV': 9.9,
                                 'diesel_truck_consumption': 33.7,
                                 'diesel_truck_volume': 15000})
     
     transportation_cost.append({'diesel_price': diesel_price,
                                 'fuel_price': diesel_price,
-                                'tech_name' : 'SA_Diesel1',
+                                'tech_name': 'MG_Diesel_Chaco',
+                                'efficiency': 0.33,
+                                'fuel_LHV': 9.9,
+                                'diesel_truck_consumption': 33.7,
+                                'diesel_truck_volume': 15000})
+    
+    transportation_cost.append({'diesel_price': diesel_price,
+                                'fuel_price': diesel_price,
+                                'tech_name' : 'SA_Diesel_Highlands',
                                 'efficiency': 0.28,
-                                'fuel_LHV': 9.9445485,
+                                'fuel_LHV': 9.9,
                                 'diesel_truck_consumption': 14,
                                 'diesel_truck_volume': 300})
     
     transportation_cost.append({'diesel_price': diesel_price,
                                 'fuel_price': diesel_price,
-                                'tech_name' : 'SA_Diesel2',
+                                'tech_name' : 'SA_Diesel_Amazonia',
                                 'efficiency': 0.28,
-                                'fuel_LHV': 9.9445485,
+                                'fuel_LHV': 9.9,
                                 'diesel_truck_consumption': 14,
                                 'diesel_truck_volume': 300})   
-    
+
+
+    transportation_cost.append({'diesel_price': diesel_price,
+                                'fuel_price': diesel_price,
+                                'tech_name' : 'SA_Diesel_Chaco',
+                                'efficiency': 0.28,
+                                'fuel_LHV': 9.9,
+                                'diesel_truck_consumption': 14,
+                                'diesel_truck_volume': 300})       
     # Constraints
     
     tech_constraints = []
     
-    tech_constraints.append({'type': 'minor',
-                             'name': 'MG_Diesel1',
+    tech_constraints.append({'Type': 'mayor',
+                             'name': 'MG_Diesel_Highlands',
                              'Column_name': 'Elevation',
-                             'bound'      : '800'
+                             'bound'      : 800
                                 })
-    tech_constraints.append({'type'       : 'mayor',
-                             'name'       : 'MG_Diesel1',
+  
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_Diesel_Amazonia',
                              'Column_name': 'Elevation', 
-                             'bound'      : '800'
+                             'bound'      : 800
                                 })
     
-    tech_constraints.append({'type': 'mayor',
-                             'name': 'MG_Diesel1',
+    tech_constraints.append({'Type': 'mayor',
+                             'name': 'MG_Diesel_Amazonia',
                              'Column_name': 'Y_deg', 
-                             'bound'      : '-17'                          
+                             'bound'      : -17                          
                                 })
-        
+    
+
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_Diesel_Chaco',
+                             'Column_name': 'Elevation', 
+                             'bound'      : 800
+                                })
+    
+    tech_constraints.append({'Type': 'minor',
+                             'name': 'MG_Diesel_Chaco',
+                             'Column_name': 'Y_deg', 
+                             'bound'      : -17                          
+                                })
+
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'SA_PV_Highlands',
+                             'Column_name': 'Pop2012', 
+                             'bound'      : 1926                          
+                                })
+
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'SA_PV_Amazonia',
+                             'Column_name': 'Pop2012', 
+                             'bound'      : 1926                          
+                                })
+
+    tech_constraints.append({'Type'       : 'mayor',
+                             'name'       : 'SA_PV_Chaco',
+                             'Column_name': 'Pop2012', 
+                             'bound'      : 1926                          
+                                })
+##########################################
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'SA_Diesel_Highlands',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      : 500                          
+                                })
+    
+    tech_constraints.append({'Type'       : 'mayor',
+                             'name'       : 'SA_Diesel_Amazonia',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      : 500                         
+                                })
+
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'SA_Diesel_Amazonia',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      : 500000                         
+                                })
+
+    tech_constraints.append({'Type'       : 'mayor',
+                             'name'       : 'SA_Diesel_Chaco',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      : 500000                         
+                                })
+
+
+
+
+
     
     return technologies, transportation_cost, tech_constraints
     

@@ -1798,7 +1798,7 @@ class SettlementProcessor:
         self.calculate_total_demand_per_settlement(year)
         self.set_sa_communities(technologies, year, time_step,start_year)
 
-    def calculate_off_grid_lcoes(self, technologies, year, end_year, time_step):
+    def calculate_off_grid_lcoes(self, technologies, tech_constraints,year, end_year, time_step):
         """
         Calculate the LCOEs for all off-grid technologies
 
@@ -1884,7 +1884,7 @@ class SettlementProcessor:
                                       grid_cell_area=self.df[SET_GRID_CELL_AREA],
                                       capacity_factor=self.df[SET_WINDCF])
                 self.df.loc[self.df[SET_WINDCF] <= 0.1, i.name + "{}".format(year)] = 99
-                isolated_invesments[i.name+ "{}".format(year)] = isolated_invesments[i.name+ "{}".format(year)].fillna(99999999999999999999999999)
+                isolated_invesments[i.name + "{}".format(year)] = isolated_invesments[i.name+ "{}".format(year)].fillna(99999999999999999999999999)
             elif i.code == 7:
                 
                 logging.info('Calculate minigrid hydro LCOE')
@@ -1900,11 +1900,30 @@ class SettlementProcessor:
                                        grid_cell_area=self.df[SET_GRID_CELL_AREA],
                                        additional_mv_line_length= self.df[SET_HYDRO_DIST])        
     
-    
+        
+        self.apply_tech_constraints(tech_constraints, year)
         self.choose_minimum_off_grid_tech(year, technologies)
 
         return isolated_invesments
 
+    def apply_tech_constraints(self, tech_constraints, year):
+        
+        for i in tech_constraints:
+            
+            Type = i['Type']
+            name = i['name']
+            column_name = i['Column_name']
+            value = i['bound']
+            
+            if Type == 'minor':
+                
+               self.df.loc[self.df[column_name] >= value, name + "{}".format(year)] = 99
+            
+            elif Type == 'mayor':
+        
+               self.df.loc[self.df[column_name] < value, name + "{}".format(year)] = 99
+        
+        
     def choose_minimum_off_grid_tech(self, year, technologies):
         """Choose minimum LCOE off-grid technology
 

@@ -214,7 +214,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.fuel_cost_columns(transportation_cost, year)
 
-            invesments = onsseter.calculate_off_grid_lcoes(technologies, year, end_year, time_step)
+            invesments = onsseter.calculate_off_grid_lcoes(technologies, tech_constraints,year, end_year, time_step)
             
             for i in technologies:
                 if i.code ==1:

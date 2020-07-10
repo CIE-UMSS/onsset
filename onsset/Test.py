@@ -44,7 +44,6 @@ data2 = pd.read_csv('Bolivia/bo-1-0_0_0_0_0_0.csv', index_col=0)
 #         99:'Non'}
 #
 #
-#
 #for j in year:
 #    for i in data1.index:
 #        name1 = 'FinalElecCode' + str(j)
@@ -55,13 +54,13 @@ data2 = pd.read_csv('Bolivia/bo-1-0_0_0_0_0_0.csv', index_col=0)
 #        else:
 #            data1.loc[i,name1] = codes[code1] + str(j)
 #     
-year = [2020,2030]
+year = [2020, 2030]
 
 key_words = ['SADieselFuelCost',	'MGDieselFuelCost',	'MG_Hydro1',	'MG_Wind1',	
                  'MG_PV1', 'SA_PV1',	'MG_Diesel1',  'SA_Diesel1', 'MG_Hydro2',	'MG_Wind2',	
                  'MG_PV2', 'SA_PV2',	'MG_Diesel2',  'SA_Diesel2',
-                 'Minimum_LCOE_Off_grid', 
-                 'Grid', 'MinimumOverallLCOE', 'InvestmentCost', 'NewCapacity', 'FinalElecCode']
+                 'Minimum_LCOE_Off_grid', 'Grid', 'MinimumOverallLCOE', 
+                 'InvestmentCost', 'NewCapacity', 'FinalElecCode']
     
 
     
