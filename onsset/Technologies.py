@@ -335,78 +335,135 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     tech_constraints.append({'Type': 'mayor',
                              'name': 'MG_Diesel_Highlands',
                              'Column_name': 'Elevation',
-                             'bound'      : 800
+                             'bound'      : 800, 
+                             'Years'      :  [2020,2030]
                                 })
   
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'MG_Diesel_Amazonia',
                              'Column_name': 'Elevation', 
-                             'bound'      : 800
+                             'bound'      : 800, 
+                             'Years'      :  [2020,2030]
                                 })
     
     tech_constraints.append({'Type': 'mayor',
                              'name': 'MG_Diesel_Amazonia',
                              'Column_name': 'Y_deg', 
-                             'bound'      : -17                          
+                             'bound'      : -17, 
+                             'Years'      :  [2020,2030]                          
                                 })
     
 
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'MG_Diesel_Chaco',
                              'Column_name': 'Elevation', 
-                             'bound'      : 800
+                             'bound'      : 800, 
+                             'Years'      :  [2020,2030]
                                 })
     
     tech_constraints.append({'Type': 'minor',
                              'name': 'MG_Diesel_Chaco',
                              'Column_name': 'Y_deg', 
-                             'bound'      : -17                          
+                             'bound'      : -17, 
+                             'Years'      :  [2020,2030]                          
                                 })
 
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'SA_PV_Highlands',
                              'Column_name': 'Pop2012', 
-                             'bound'      : 1926                          
+                             'bound'      : 1926, 
+                             'Years'      :  [2020,2030]                          
                                 })
 
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'SA_PV_Amazonia',
                              'Column_name': 'Pop2012', 
-                             'bound'      : 1926                          
+                             'bound'      : 1926, 
+                             'Years'      :  [2020,2030]                          
                                 })
 
     tech_constraints.append({'Type'       : 'mayor',
                              'name'       : 'SA_PV_Chaco',
                              'Column_name': 'Pop2012', 
-                             'bound'      : 1926                          
+                             'bound'      : 1926, 
+                             'Years'      :  [2020,2030]                          
                                 })
 ##########################################
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'SA_Diesel_Highlands',
                              'Column_name': 'PopStartYear', 
-                             'bound'      : 500                          
+                             'bound'      : 500, 
+                             'Years'      :  [2020,2030]                          
                                 })
     
     tech_constraints.append({'Type'       : 'mayor',
                              'name'       : 'SA_Diesel_Amazonia',
                              'Column_name': 'PopStartYear', 
-                             'bound'      : 500                         
+                             'bound'      : 500, 
+                             'Years'      :  [2020,2030]                         
                                 })
 
     tech_constraints.append({'Type'       : 'minor',
                              'name'       : 'SA_Diesel_Amazonia',
                              'Column_name': 'PopStartYear', 
-                             'bound'      : 500000                         
+                             'bound'      : 500000, 
+                             'Years'      :  [2020,2030]                         
                                 })
 
     tech_constraints.append({'Type'       : 'mayor',
                              'name'       : 'SA_Diesel_Chaco',
                              'Column_name': 'PopStartYear', 
-                             'bound'      : 500000                         
+                             'bound'      : 500000, 
+                             'Years'      :  [2020,2030]                         
                                 })
 
+##########################################
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_PV_Highlands',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      :  500, 
+                             'Years'      :  [2030]     
+                                })
 
+    tech_constraints.append({'Type'       : 'mayor',
+                             'name'       : 'MG_PV_Highlands',
+                             'Column_name': 'Elevation', 
+                             'bound'      :  800, 
+                             'Years'      :  [2030]     
+                                })
 
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_PV_Amazonia',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      :  500, 
+                             'Years'      :  [2030]     
+                                })
+
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_PV_Amazonia',
+                             'Column_name': 'Elevation', 
+                             'bound'      :  800, 
+                             'Years'      :  [2030]     
+                                })
+    tech_constraints.append({'Type': 'mayor',
+                             'name': 'MG_PV_Amazonia',
+                             'Column_name': 'Y_deg', 
+                             'bound'      : -17, 
+                             'Years'      :  [2030]                          
+                                })   
+    
+    
+    tech_constraints.append({'Type': 'minor',
+                             'name': 'MG_PV_Chaco',
+                             'Column_name': 'Y_deg', 
+                             'bound'      : -17, 
+                             'Years'      :  [2020]                          
+                                })    
+    tech_constraints.append({'Type'       : 'minor',
+                             'name'       : 'MG_PV_Chaco',
+                             'Column_name': 'PopStartYear', 
+                             'bound'      :  500, 
+                             'Years'      :  [2020]  })    
 
 
     

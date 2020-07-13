@@ -1373,7 +1373,7 @@ class SettlementProcessor:
                 self.get_grid_lcoe(dist_adjusted=mv_dist_adjusted, elecorder=0, additional_transformer=0, year=year,
                                    time_step=time_step, end_year=end_year, grid_calc=grid_calc)
             intensification_lcoe = new_lcoes.copy(deep=True)
-            intensification_lcoe.loc[(mv_planned < auto_intensification) & (prev_code + "{}".format(year - time_step) != 'Grid')] = 0.01
+            intensification_lcoe.loc[(mv_planned < auto_intensification) & (prev_code  != 'Grid' + "{}".format(year - time_step))] = 0.01
             intensification_lcoe = pd.DataFrame(intensification_lcoe)
             intensification_lcoe.columns = [0]
 
@@ -1914,15 +1914,21 @@ class SettlementProcessor:
             name = i['name']
             column_name = i['Column_name']
             value = i['bound']
+            years = i['Years']
             
-            if Type == 'minor':
+            if year in years:
+        
+                if Type == 'minor':
+                    
+                   self.df.loc[self.df[column_name] >= value, name + "{}".format(year)] = 99
                 
-               self.df.loc[self.df[column_name] >= value, name + "{}".format(year)] = 99
+                elif Type == 'mayor':
             
-            elif Type == 'mayor':
-        
-               self.df.loc[self.df[column_name] < value, name + "{}".format(year)] = 99
-        
+                   self.df.loc[self.df[column_name] < value, name + "{}".format(year)] = 99
+            else:
+                
+                self.df[name + "{}".format(year)] = 99
+            
         
     def choose_minimum_off_grid_tech(self, year, technologies):
         """Choose minimum LCOE off-grid technology

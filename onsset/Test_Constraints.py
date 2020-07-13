@@ -47,3 +47,16 @@ df2['SA_Diesel_Amazonia2020']  = data['SA_Diesel_Amazonia2020']
 df2['SA_Diesel_Chaco2030']     = data['SA_Diesel_Chaco2030']
 df2['SA_Diesel_Chaco2020']     = data['SA_Diesel_Chaco2020']
 df2['PopStartYear'] = data['PopStartYear']
+
+#%%
+
+df3 = pd.DataFrame()
+df3['MG_PV_Highlands2020'] = data['MG_PV_Highlands2020']
+df3['MG_PV_Highlands2030'] = data['MG_PV_Highlands2030']
+df3['MG_PV_Amazonia2020'] = data['MG_PV_Amazonia2020']
+df3['MG_PV_Amazonia2030'] = data['MG_PV_Amazonia2030']
+df3['MG_PV_Chaco2020'] = data['MG_PV_Chaco2020']
+df3['MG_PV_Chaco2030'] = data['MG_PV_Chaco2030']
+df3['Elevation'] = data['Elevation']
+df3['PopStartYear'] = data['PopStartYear']
+df3['Y_deg'] = data['Y_deg']
