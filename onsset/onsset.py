@@ -2,7 +2,7 @@ import logging
 from math import exp, log, pi
 from typing import Dict
 import scipy.spatial
-
+from joblib import load
 import numpy as np
 import pandas as pd
 
@@ -1747,6 +1747,62 @@ class SettlementProcessor:
         self.df.loc[self.df[SET_URBAN] == 2, SET_TOTAL_ENERGY_PER_CELL] = \
             self.df[SET_CAPITA_DEMAND] * self.df[SET_POP + "{}".format(year)]
             
+            
+    def set_demand_constrains(self, year, demand_constraints):
+
+        for i in demand_constraints:
+            
+            name = i['name']
+            constraints_number = i['constraints']
+            
+            df = pd.DataFrame()
+            for j in range(1,constraints_number+1):
+                
+                Type = i['Type_' + str(j)]
+                column_name = i['Column_name_' + str(j)]
+                value = i['bound_' + str(j)]
+                
+                if Type == 'minor':
+                    
+                   df[column_name] =  value > self.df[column_name]  
+                
+                elif Type == 'mayor':
+            
+                   df[column_name] =  value <= self.df[column_name] 
+                
+            df['result'] = df.all(axis=1)    
+                
+            path =  i['path']   
+            demand = load(path)
+            variables_number = i['Variables']
+            
+            X_1 = pd.DataFrame()
+            X_2 = pd.DataFrame()
+            for n in range(1, variables_number+1):
+                
+                variable_name = i['Var_' + str(n)]
+                
+                if variable_name == 'HouseHolds':
+                    
+                    X_1['HouseHoldsEnergyPerCell'] = self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH']
+                    X_2['HouseHoldsTotalEnergy'] = self.df['Pop'  + "{}".format(year)]/self.df['NumPeoplePerHH']
+                else:
+                    
+                    X_1[variable_name] = self.df[variable_name]
+                    X_2[variable_name] = self.df[variable_name]
+            
+            
+            demand_1 = pd.DataFrame(demand.predict(X_1))
+            demand_2 = pd.DataFrame(demand.predict(X_2))
+            self.df[SET_ENERGY_PER_CELL + "{}".format(year)] = np.where(df['result'].values, demand_1[0].values, 
+                                                                       self.df[SET_ENERGY_PER_CELL + "{}".format(year)].values)
+            
+            self.df[SET_TOTAL_ENERGY_PER_CELL] = np.where(df['result'].values, demand_2[0].values, 
+                                                                       self.df[SET_TOTAL_ENERGY_PER_CELL].values)
+            self.df.loc[df['result'], 'Demand_Name'] = name
+            
+            
+            
     def set_sa_communities(self, technologies, year, time_step, start_year):
         
         self.df[SET_DISTRIBUTION_NETWORK+ "{}".format(year - time_step)] = True
@@ -1767,7 +1823,7 @@ class SettlementProcessor:
                                     SET_DISTRIBUTION_NETWORK + "{}".format(year - time_step)] = False
 
     def set_scenario_variables(self, year, num_people_per_hh_rural, num_people_per_hh_urban, time_step, start_year,
-                               urban_tier, rural_tier, end_year_pop, productive_demand, technologies):
+                               urban_tier, rural_tier, end_year_pop, productive_demand, technologies, demand_constraints):
         """
         this method determines some basic parameters required in LCOE calculation
         it sets the basic scenario parameters that differ based on urban/rural so that they are in the table and
@@ -1793,9 +1849,16 @@ class SettlementProcessor:
             self.df[SET_POP + "{}".format(year)] = self.df[SET_POP + "{}".format(year) + 'High']
 
         self.calculate_new_connections(year, time_step, start_year)
+        
         self.set_residential_demand(rural_tier, urban_tier, num_people_per_hh_rural, num_people_per_hh_urban,
                                     productive_demand)
         self.calculate_total_demand_per_settlement(year)
+        
+        if len(demand_constraints) > 0:
+            
+            self.set_demand_constrains(year, demand_constraints)
+        
+        
         self.set_sa_communities(technologies, year, time_step,start_year)
 
     def calculate_off_grid_lcoes(self, technologies, tech_constraints,year, end_year, time_step):

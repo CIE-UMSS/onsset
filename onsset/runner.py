@@ -176,7 +176,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
         # RUN_PARAM: Fill in general and technology specific parameters (e.g. discount rate, losses etc.)
         
-        technologies, transportation_cost, tech_constraints = technology_creation(start_year, end_year, 
+        technologies, transportation_cost, tech_constraints, demand_constraints = technology_creation(start_year, end_year, 
                                                                 grid_price, specs_data, diesel_price, 
                                                                 pv_capital_cost_adjust)
 
@@ -210,7 +210,8 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                 grid_connect_limit = 9999999999
 
             onsseter.set_scenario_variables(year, num_people_per_hh_rural, num_people_per_hh_urban, time_step,
-                                            start_year, urban_tier, rural_tier, end_year_pop, productive_demand, technologies)
+                                            start_year, urban_tier, rural_tier, end_year_pop, productive_demand, 
+                                            technologies, demand_constraints)
 
             onsseter.fuel_cost_columns(transportation_cost, year)
 
