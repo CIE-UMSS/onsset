@@ -120,7 +120,8 @@ class Technology:
                  diesel_truck_volume=0,  # litres
                  om_of_td_lines=0,
                  name = 'Technology',
-                 code = 1):  # percentage
+                 code = 1, # percentage
+                 surrogate_model = False):  
 
         self.distribution_losses = distribution_losses
         self.connection_cost_per_hh = connection_cost_per_hh
@@ -142,6 +143,8 @@ class Technology:
         self.om_of_td_lines = om_of_td_lines
         self.name = name
         self.code = code
+        self.surrogate_model = surrogate_model
+
 
     @classmethod
     def set_default_values(cls, base_year, start_year, end_year, discount_rate, hv_line_type=115, hv_line_cost=117000,
@@ -261,100 +264,102 @@ class Technology:
                                                                                   productive_nodes,
                                                                                   elec_loop,
                                                                                   penalty)
-        generation_per_year = pd.Series(generation_per_year)
-        peak_load = pd.Series(peak_load)
-        td_investment_cost = pd.Series(td_investment_cost)
-
-        td_investment_cost = td_investment_cost * grid_penalty_ratio
-        td_om_cost = td_investment_cost * self.om_of_td_lines * penalty
+        if self.surrogate_model == True:
         
-        if isinstance(capacity_factor, pd.Series):
+            generation_per_year = pd.Series(generation_per_year)
+            peak_load = pd.Series(peak_load)
+            td_investment_cost = pd.Series(td_investment_cost)
+    
+            td_investment_cost = td_investment_cost * grid_penalty_ratio
+            td_om_cost = td_investment_cost * self.om_of_td_lines * penalty
             
-            installed_capacity =  peak_load / capacity_factor
-        elif self.capacity_factor > 0:
-            
-            installed_capacity = peak_load / self.capacity_factor
-        else:
-            
-            installed_capacity = peak_load/capacity_factor
-        
-        cap_cost = td_investment_cost * 0
-        cost_dict_list = self.capital_cost.keys()
-        cost_dict_list = sorted(cost_dict_list)
-        for key in cost_dict_list:
-            if self.standalone:
-                cap_cost.loc[((installed_capacity / (people / num_people_per_hh)) < key) & (cap_cost == 0)] = \
-                    self.capital_cost[key]
+            if isinstance(capacity_factor, pd.Series):
+                
+                installed_capacity =  peak_load / capacity_factor
+            elif self.capacity_factor > 0:
+                
+                installed_capacity = peak_load / self.capacity_factor
             else:
-                cap_cost.loc[(installed_capacity < key) & (cap_cost == 0)] = self.capital_cost[key]
-
-        capital_investment = installed_capacity * cap_cost * penalty
-        total_om_cost = td_om_cost + (cap_cost * penalty * self.om_costs * installed_capacity)
-        total_investment_cost = td_investment_cost + capital_investment
-
-        if self.grid_price > 0:
-            fuel_cost = self.grid_price
-
-        # Perform the time-value LCOE calculation
-
-        project_life = int(end_year - self.base_year + 1)
-        
-        reinvest_year = 0
-        step = int(start_year - self.base_year)
-        # If the technology life is less than the project life, we will have to invest twice to buy it again
-        if self.tech_life + step < project_life:
-            reinvest_year = self.tech_life + step
-
-        year = np.arange(project_life)
+                
+                installed_capacity = peak_load/capacity_factor
             
-        el_gen = np.outer(np.asarray(generation_per_year), np.ones(project_life))
-        for s in range(step):
-            el_gen[:, s] = 0
-        discount_factor = (1 + self.discount_rate) ** year
-        investments = np.zeros(project_life)
-        investments[step] = 1
-        # Calculate the year of re-investment if tech_life is smaller than project life
-        if reinvest_year:
-            investments[reinvest_year] = 1
-        investments = np.outer(total_investment_cost, investments)
-
-        grid_capacity_investments = np.zeros(project_life)
-        grid_capacity_investments[step] = 1
-        # Calculate the year of re-investment if tech_life is smaller than project life
-        if reinvest_year:
-            grid_capacity_investments[reinvest_year] = 1
-        grid_capacity_investments = np.outer(peak_load * self.grid_capacity_investment, grid_capacity_investments)
-
-        # Calculate salvage value if tech_life is bigger than project life
-        salvage = np.zeros(project_life)
-        if reinvest_year > 0:
-            used_life = (project_life - step) - self.tech_life
-        else:
-            used_life = project_life - step - 1
-        salvage[-1] = 1
-        salvage = np.outer(total_investment_cost * (1 - used_life / self.tech_life), salvage)
-
-        operation_and_maintenance = np.ones(project_life)
-        for s in range(step):
-            operation_and_maintenance[s] = 0
-        operation_and_maintenance = np.outer(total_om_cost, operation_and_maintenance)
-        fuel = np.outer(np.asarray(generation_per_year), np.zeros(project_life))
-        for p in range(project_life):
-            fuel[:, p] = el_gen[:, p] * fuel_cost
-
-        discounted_investments = investments / discount_factor
-        dicounted_grid_capacity_investments = grid_capacity_investments / discount_factor
-        investment_cost = np.sum(discounted_investments, axis=1) + np.sum(dicounted_grid_capacity_investments, axis=1)
-        discounted_costs = (investments + operation_and_maintenance + fuel - salvage) / discount_factor
-        discounted_generation = el_gen / discount_factor
-        lcoe = np.sum(discounted_costs, axis=1) / np.sum(discounted_generation, axis=1)
-        lcoe = pd.DataFrame(lcoe[:, np.newaxis])
-        investment_cost = pd.DataFrame(investment_cost[:, np.newaxis])
-
-        if get_investment_cost:
-            return investment_cost
-        else:
-            return lcoe, investment_cost
+            cap_cost = td_investment_cost * 0
+            cost_dict_list = self.capital_cost.keys()
+            cost_dict_list = sorted(cost_dict_list)
+            for key in cost_dict_list:
+                if self.standalone:
+                    cap_cost.loc[((installed_capacity / (people / num_people_per_hh)) < key) & (cap_cost == 0)] = \
+                        self.capital_cost[key]
+                else:
+                    cap_cost.loc[(installed_capacity < key) & (cap_cost == 0)] = self.capital_cost[key]
+    
+            capital_investment = installed_capacity * cap_cost * penalty
+            total_om_cost = td_om_cost + (cap_cost * penalty * self.om_costs * installed_capacity)
+            total_investment_cost = td_investment_cost + capital_investment
+    
+            if self.grid_price > 0:
+                fuel_cost = self.grid_price
+    
+            # Perform the time-value LCOE calculation
+    
+            project_life = int(end_year - self.base_year + 1)
+            
+            reinvest_year = 0
+            step = int(start_year - self.base_year)
+            # If the technology life is less than the project life, we will have to invest twice to buy it again
+            if self.tech_life + step < project_life:
+                reinvest_year = self.tech_life + step
+    
+            year = np.arange(project_life)
+                
+            el_gen = np.outer(np.asarray(generation_per_year), np.ones(project_life))
+            for s in range(step):
+                el_gen[:, s] = 0
+            discount_factor = (1 + self.discount_rate) ** year
+            investments = np.zeros(project_life)
+            investments[step] = 1
+            # Calculate the year of re-investment if tech_life is smaller than project life
+            if reinvest_year:
+                investments[reinvest_year] = 1
+            investments = np.outer(total_investment_cost, investments)
+    
+            grid_capacity_investments = np.zeros(project_life)
+            grid_capacity_investments[step] = 1
+            # Calculate the year of re-investment if tech_life is smaller than project life
+            if reinvest_year:
+                grid_capacity_investments[reinvest_year] = 1
+            grid_capacity_investments = np.outer(peak_load * self.grid_capacity_investment, grid_capacity_investments)
+    
+            # Calculate salvage value if tech_life is bigger than project life
+            salvage = np.zeros(project_life)
+            if reinvest_year > 0:
+                used_life = (project_life - step) - self.tech_life
+            else:
+                used_life = project_life - step - 1
+            salvage[-1] = 1
+            salvage = np.outer(total_investment_cost * (1 - used_life / self.tech_life), salvage)
+    
+            operation_and_maintenance = np.ones(project_life)
+            for s in range(step):
+                operation_and_maintenance[s] = 0
+            operation_and_maintenance = np.outer(total_om_cost, operation_and_maintenance)
+            fuel = np.outer(np.asarray(generation_per_year), np.zeros(project_life))
+            for p in range(project_life):
+                fuel[:, p] = el_gen[:, p] * fuel_cost
+    
+            discounted_investments = investments / discount_factor
+            dicounted_grid_capacity_investments = grid_capacity_investments / discount_factor
+            investment_cost = np.sum(discounted_investments, axis=1) + np.sum(dicounted_grid_capacity_investments, axis=1)
+            discounted_costs = (investments + operation_and_maintenance + fuel - salvage) / discount_factor
+            discounted_generation = el_gen / discount_factor
+            lcoe = np.sum(discounted_costs, axis=1) / np.sum(discounted_generation, axis=1)
+            lcoe = pd.DataFrame(lcoe[:, np.newaxis])
+            investment_cost = pd.DataFrame(investment_cost[:, np.newaxis])
+    
+            if get_investment_cost:
+                return investment_cost
+            else:
+                return lcoe, investment_cost
 
     def transmission_network(self, peak_load, additional_mv_line_length=0, additional_transformer=0,
                              mv_distribution=False):
@@ -693,6 +698,39 @@ class SettlementProcessor:
 #                traveltime) / diesel_truck_volume / LHV_DIESEL / efficiency
         return (fuel_price + 2 * diesel_price * diesel_truck_consumption *
                 traveltime/ diesel_truck_volume)  / LHV_fuel / efficiency
+    @staticmethod
+    def fuel_cost_calculator_2(fuel_price: float,
+                             diesel_price: float,
+                             diesel_truck_consumption: float,
+                             diesel_truck_volume: float,
+                             traveltime: np.ndarray):
+        
+        """We apply the Szabo formula to calculate the transport cost for the diesel
+
+        Formulae is::
+
+            p = (p_d + 2*p_d*consumption*time/volume)*(1/mu)*(1/LHVd)
+
+        Arguments
+        ---------
+        diesel_price: float
+        diesel_truck_consumption: float
+        diesel_truck_volume: float
+        traveltime: numpy.ndarray
+        efficiency: float
+
+        Returns
+        -------
+        numpy.ndarray
+        """
+
+
+        return (fuel_price + 2 * diesel_price * diesel_truck_consumption *
+                traveltime/ diesel_truck_volume)
+
+
+
+
 
     def compute_fuel_cost(self,
                             dataframe: pd.DataFrame,
@@ -715,20 +753,27 @@ class SettlementProcessor:
         travel_time = df[SET_TRAVEL_HOURS].values
         
         for i in transportation_cost:
-
-            df[i['tech_name']+ 'FuelCost' +  "{}".format(year)] = self.fuel_cost_calculator(
+            
+            if len(i) == 7: 
                 
-                fuel_price = i['fuel_price'],
-                diesel_price = i['diesel_price'],
-                diesel_truck_volume = i['diesel_truck_volume'],
-                diesel_truck_consumption = i['diesel_truck_consumption'],
-                efficiency = i['efficiency'],
-                LHV_fuel = i['fuel_LHV'],
-                traveltime=travel_time
-                )
+                df[i['tech_name']+ 'FuelCost' +  "{}".format(year)] = self.fuel_cost_calculator(
+                    
+                    fuel_price = i['fuel_price'],
+                    diesel_price = i['diesel_price'],
+                    diesel_truck_volume = i['diesel_truck_volume'],
+                    diesel_truck_consumption = i['diesel_truck_consumption'],
+                    efficiency = i['efficiency'],
+                    LHV_fuel = i['fuel_LHV'],
+                    traveltime=travel_time
+                    )
 
-
-        
+            if len(i) == 6:
+                
+                df[i['tech_name']+ 'FuelCost' +  "{}".format(year)] = self.fuel_cost_calculator_2(fuel_price = i['fuel_price'],
+                    diesel_price = i['diesel_price'],
+                    diesel_truck_volume = i['diesel_truck_volume'],
+                    diesel_truck_consumption = i['diesel_truck_consumption'],
+                    traveltime=travel_time)
         
         
         
@@ -1962,7 +2007,22 @@ class SettlementProcessor:
                                        num_people_per_hh=self.df[SET_NUM_PEOPLE_PER_HH],
                                        grid_cell_area=self.df[SET_GRID_CELL_AREA],
                                        additional_mv_line_length= self.df[SET_HYDRO_DIST])        
-    
+            
+            elif i.code == 8:
+                
+                logging.info('Calculate ' +  i.name  +  ' LCOE')
+                i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                                            start_year=year - time_step,
+                                            end_year=end_year,
+                                            people=self.df[SET_POP + "{}".format(year)],
+                                            new_connections=self.df[SET_NEW_CONNECTIONS + "{}".format(year)],
+                                            total_energy_per_cell=self.df[SET_TOTAL_ENERGY_PER_CELL],
+                                            prev_code=self.df[SET_DISTRIBUTION_NETWORK + "{}".format(year - time_step)],
+                                            num_people_per_hh=self.df[SET_NUM_PEOPLE_PER_HH],
+                                            grid_cell_area=self.df[SET_GRID_CELL_AREA],
+                                            fuel_cost=self.df[i.name+ 'FuelCost' +  "{}".format(year)])
+                
+                
         
         self.apply_tech_constraints(tech_constraints, year)
         self.choose_minimum_off_grid_tech(year, technologies)

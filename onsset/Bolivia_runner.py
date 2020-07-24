@@ -1,6 +1,6 @@
 import os
 from runner import scenario
-
+import pandas as pd
 
 
     # 'Database_lower_ElecPopCalib.csv'
@@ -12,3 +12,5 @@ summary_folder	= os.path.join('Bolivia')
   
 scenario(specs_path, calibrated_csv_path, results_folder, summary_folder)
     
+data = pd.read_csv('Bolivia/bo-1-0_0_0_0_0_0.csv', index_col=0)  
+df = data['MG_Hybrid_ChacoFuelCost2020']

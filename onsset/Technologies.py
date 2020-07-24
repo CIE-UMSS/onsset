@@ -278,6 +278,45 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     technologies.append(sa_diesel_calc2)
     
     
+    
+    surrogate_model_1 = {'name': 'MG_Hybrid_Chaco',
+                         'path_LCOE': 'Bolivia/Surrogate_Models/Demand/LCOE_Chaco.joblib' ,
+                         'path_NPC': 'Bolivia/Surrogate_Models/Demand/NPC_Chaco.joblib', 
+                         'Variables' : 1,
+                         'Var_1' : 'Renewable Invesment Cost',
+                         'value_1': 1500
+                         'Var_2' : 'Battery Unitary Invesment Cost',
+                         'value_2': 600
+                         'Var_3' : 'Deep of Discharge',
+                         'value_3': 0.2
+                         'Var_4' : 'Battery Cycles',
+                         'value_4': 5500
+                         'Var_5' : 'Generator Efficiency',
+                         'value_5': 0.34
+                         'Var_6' : 'Low Heating Value',
+                         'value_6': 9.9,
+                         'Var_7' : 'Fuel Cost',
+                         'Var_8' : 'HouseHolds',
+                         'Var_9' : 'Renewable Energy Unit Total',
+                         'value_9': 'PV total output'}                                }
+    
+    
+    
+    mg_hybrid_calc = Technology(om_of_td_lines=0.05,
+                                 distribution_losses=0.07,
+                                 connection_cost_per_hh=100,
+                                 base_to_peak_load_ratio=0.5,
+                                 capacity_factor=0.8,
+                                 tech_life=20,
+                                 om_costs=0.08,
+                                 capital_cost={float("inf"): 1500},
+                                 mini_grid=True,
+                                 name = 'MG_Hybrid_Chaco',
+                                 code = 8,
+                                 path = 'Bolivia/Surrogate_Models/Hybrid/NPC_Amazonia.joblib')
+    
+    technologies.append(mg_hybrid_calc)
+    
     transportation_cost = []
     
     transportation_cost.append({'diesel_price': diesel_price,
@@ -327,7 +366,15 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 'efficiency': 0.28,
                                 'fuel_LHV': 9.9,
                                 'diesel_truck_consumption': 14,
-                                'diesel_truck_volume': 300})       
+                                'diesel_truck_volume': 300})      
+    
+    transportation_cost.append({'diesel_price': diesel_price,
+                                'fuel_price': diesel_price,
+                                'tech_name' : 'MG_Hybrid_Chaco',
+                                'diesel_truck_consumption': 33.7,
+                                'diesel_truck_volume':  15000,
+                                'Surrogate_Models': True})       
+    
     # Constraints
     
     tech_constraints = []
