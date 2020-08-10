@@ -121,7 +121,9 @@ class Technology:
                  om_of_td_lines=0,
                  name = 'Technology',
                  code = 1, # percentage
-                 surrogate_model = False):  
+                 surrogate_model = False,
+                 surrogate_model_data={},
+                 tech_life_surrogate=0):  
 
         self.distribution_losses = distribution_losses
         self.connection_cost_per_hh = connection_cost_per_hh
@@ -144,6 +146,8 @@ class Technology:
         self.name = name
         self.code = code
         self.surrogate_model = surrogate_model
+        self.surrogate_model_data = surrogate_model_data
+        self.tech_life_surrogate = tech_life_surrogate
 
 
     @classmethod
@@ -184,7 +188,7 @@ class Technology:
     def get_lcoe(self, energy_per_cell, people, num_people_per_hh, start_year, end_year, new_connections,
                  total_energy_per_cell, prev_code, grid_cell_area, additional_mv_line_length=0.0,
                  capacity_factor=0.9, grid_penalty_ratio=1, fuel_cost=0, elec_loop=0, productive_nodes=0,
-                 additional_transformer=0, penalty=1, get_investment_cost=False):
+                 additional_transformer=0, penalty=1, get_investment_cost=False, independant_variables=0):
         """Calculates the LCOE depending on the parameters. Optionally calculates the investment cost instead.
 
         Parameters
@@ -264,7 +268,7 @@ class Technology:
                                                                                   productive_nodes,
                                                                                   elec_loop,
                                                                                   penalty)
-        if self.surrogate_model == True:
+        if self.surrogate_model == False:
         
             generation_per_year = pd.Series(generation_per_year)
             peak_load = pd.Series(peak_load)
@@ -313,7 +317,7 @@ class Technology:
             year = np.arange(project_life)
                 
             el_gen = np.outer(np.asarray(generation_per_year), np.ones(project_life))
-            for s in range(step):
+            for s in range(step+1):
                 el_gen[:, s] = 0
             discount_factor = (1 + self.discount_rate) ** year
             investments = np.zeros(project_life)
@@ -340,7 +344,7 @@ class Technology:
             salvage = np.outer(total_investment_cost * (1 - used_life / self.tech_life), salvage)
     
             operation_and_maintenance = np.ones(project_life)
-            for s in range(step):
+            for s in range(step+1):
                 operation_and_maintenance[s] = 0
             operation_and_maintenance = np.outer(total_om_cost, operation_and_maintenance)
             fuel = np.outer(np.asarray(generation_per_year), np.zeros(project_life))
@@ -360,6 +364,111 @@ class Technology:
                 return investment_cost
             else:
                 return lcoe, investment_cost
+            
+            
+        elif self.surrogate_model == True:
+            
+            surrogate_model_data = self.surrogate_model_data
+            path_lcoe =  surrogate_model_data['path_LCOE']
+            path_NPC  =  surrogate_model_data['path_NPC']
+            path_invesment = surrogate_model_data['path_Investment']
+            lcoe_function = load(path_lcoe)
+            NPC_function = load(path_NPC)
+            investments_function = load(path_invesment)
+            
+            lcoe = pd.DataFrame(lcoe_function.predict(independant_variables))
+            investment_technology = pd.DataFrame(investments_function.predict(independant_variables))
+            
+            td_investment_cost = pd.Series(td_investment_cost)
+    
+            td_investment_cost = td_investment_cost * grid_penalty_ratio
+            td_om_cost = td_investment_cost * self.om_of_td_lines * penalty
+
+            project_life = int(end_year - self.base_year + 1)
+            
+            reinvest_year = 0
+            step = int(start_year - self.base_year)
+            
+            
+            # If the technology life is less than the project life, we will have to invest twice to buy it again
+            if self.tech_life + step < project_life:
+                reinvest_year = self.tech_life + step
+    
+            year = np.arange(project_life)
+            
+            td_total_investments = np.zeros(project_life)
+            td_total_investments[step] = 1
+            # Calculate the year of re-investment if tech_life is smaller than project life
+            if reinvest_year:
+                td_total_investments[reinvest_year] = 1
+            td_total_investments = np.outer(td_investment_cost, td_total_investments)
+            
+            salvage = np.zeros(project_life)
+            if reinvest_year > 0:
+                used_life = (project_life - step) - self.tech_life
+            else:
+                used_life = project_life - step - 1
+            salvage[-1] = 1
+            salvage = np.outer(td_investment_cost  * (1 - used_life / self.tech_life), salvage)
+            
+            operation_and_maintenance = np.ones(project_life)
+            
+            for s in range(step+1):
+                operation_and_maintenance[s] = 0
+            operation_and_maintenance = np.outer(td_om_cost, operation_and_maintenance)
+            
+            discount_factor = (1 + self.discount_rate) ** year
+            
+            discounted_investments_td = td_total_investments / discount_factor
+            
+            discounted_costs = (td_total_investments + operation_and_maintenance - salvage) / discount_factor
+            el_gen = np.outer(np.asarray(generation_per_year), np.ones(project_life))
+            for s in range(step+1):
+                el_gen[:, s] = 0
+            
+            discounted_generation = el_gen / discount_factor
+            lcoe_td = np.sum(discounted_costs, axis=1) / np.sum(discounted_generation, axis=1)            
+            lcoe_td = pd.DataFrame(lcoe_td)
+            
+            if step == 0:
+
+                lcoe = lcoe + lcoe_td
+                
+                discounted_investments_td = np.sum(discounted_investments_td, axis=1)
+                discounted_investments_td = pd.DataFrame(discounted_investments_td)
+                investment_cost = discounted_investments_td + investment_technology
+                
+                if get_investment_cost:
+                    return investment_cost
+                else:
+                    return lcoe, investment_cost
+            else:
+                
+                NPC = pd.DataFrame(NPC_function.predict(independant_variables))
+                NPC_new = NPC/discount_factor[step]
+                years_surrogate = int(project_life+ int(self.tech_life_surrogate)-(end_year -start_year))
+                years_new = np.arange(years_surrogate)
+                el_gen_new =  np.outer(np.asarray(generation_per_year), np.ones(years_surrogate))
+                for s in range(step+1):
+                    el_gen_new[:, s] = 0
+                discount_factor_new = (1 + self.discount_rate) ** years_new
+                discounted_generation_new = el_gen_new / discount_factor_new
+                discounted_generation_new = np.sum(discounted_generation_new, axis=1)
+                discounted_generation_new = pd.DataFrame(discounted_generation_new)
+                lcoe_new = NPC_new/discounted_generation_new
+                lcoe = lcoe_new + lcoe_td
+                
+                discounted_investments_td = np.sum(discounted_investments_td, axis=1)
+                discounted_investments_td = pd.DataFrame(discounted_investments_td)
+                investment_technology_new = investment_technology/discount_factor[step]
+                investment_cost = discounted_investments_td + investment_technology_new
+                
+                
+                if get_investment_cost:
+                    return investment_cost
+                else:
+                    return lcoe, investment_cost
+
 
     def transmission_network(self, peak_load, additional_mv_line_length=0, additional_transformer=0,
                              mv_distribution=False):
@@ -1905,6 +2014,39 @@ class SettlementProcessor:
         
         
         self.set_sa_communities(technologies, year, time_step,start_year)
+        
+    def independent_variable_generator(self, technology, year):
+        
+        surrogate_model_data = technology.surrogate_model_data
+        variables_number = surrogate_model_data['Variables']
+        X = pd.DataFrame(index=self.df.index)
+            
+        for i in range(1, variables_number+1):
+            
+            variable_name = surrogate_model_data['var_' + str(i)]
+            
+            if variable_name == 'HouseHolds':
+                
+                X['HouseHolds'] = self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH']
+            
+            elif variable_name == 'Fuel Cost':
+                
+                X['Fuel Cost'] = self.df[surrogate_model_data['name']+ 'FuelCost' +  "{}".format(year)]
+            
+            else:
+                
+                variable_value = surrogate_model_data['value_' + str(i)]
+                if type(variable_value) == type('string'): 
+                    
+                    
+                    X[variable_name] = self.df[variable_value]
+                
+                else:
+                
+                    X[variable_name] = variable_value
+                    
+        return X
+                
 
     def calculate_off_grid_lcoes(self, technologies, tech_constraints,year, end_year, time_step):
         """
@@ -2011,16 +2153,18 @@ class SettlementProcessor:
             elif i.code == 8:
                 
                 logging.info('Calculate ' +  i.name  +  ' LCOE')
+                X = self.independent_variable_generator(i, year)
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name + "{}".format(year)] = \
                 i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
-                                            start_year=year - time_step,
-                                            end_year=end_year,
-                                            people=self.df[SET_POP + "{}".format(year)],
-                                            new_connections=self.df[SET_NEW_CONNECTIONS + "{}".format(year)],
-                                            total_energy_per_cell=self.df[SET_TOTAL_ENERGY_PER_CELL],
-                                            prev_code=self.df[SET_DISTRIBUTION_NETWORK + "{}".format(year - time_step)],
-                                            num_people_per_hh=self.df[SET_NUM_PEOPLE_PER_HH],
-                                            grid_cell_area=self.df[SET_GRID_CELL_AREA],
-                                            fuel_cost=self.df[i.name+ 'FuelCost' +  "{}".format(year)])
+                           start_year=year - time_step,
+                           end_year=end_year,
+                           people=self.df[SET_POP + "{}".format(year)],
+                           new_connections=self.df[SET_NEW_CONNECTIONS + "{}".format(year)],
+                           total_energy_per_cell=self.df[SET_TOTAL_ENERGY_PER_CELL],
+                           prev_code=self.df[SET_DISTRIBUTION_NETWORK + "{}".format(year - time_step)],
+                           num_people_per_hh=self.df[SET_NUM_PEOPLE_PER_HH],
+                           grid_cell_area=self.df[SET_GRID_CELL_AREA],
+                           independant_variables=X)
                 
                 
         
@@ -2309,7 +2453,27 @@ class SettlementProcessor:
                     (self.df[SET_ENERGY_PER_CELL + "{}".format(year)]) /
                     (HOURS_PER_YEAR * (self.df[SET_GHI] / HOURS_PER_YEAR) * i.base_to_peak_load_ratio *
                      (1 - i.distribution_losses)))
-
+            elif i.code == 8:
+                surrogate_model_data = i.surrogate_model_data
+                X = self.independent_variable_generator(i, year)
+                path_PV = surrogate_model_data['path_PV_Capacity']
+                path_GenSet  =  surrogate_model_data['path_Genset_Capacity']
+                path_Battery = surrogate_model_data['path_Battery_Capacity']
+                PV_function = load(path_PV)
+                GenSet_function = load(path_GenSet)
+                Battery_function = load(path_Battery )
+                
+                PV_Capacity = pd.DataFrame(PV_function.predict(X))
+                GenSet_Capacity = pd.DataFrame(GenSet_function.predict(X))
+                Battery_Capacity = pd.DataFrame(Battery_function.predict(X))
+                
+                Total_Capacity = PV_Capacity[0] + GenSet_Capacity[0] + Battery_Capacity[0]  
+                
+                self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), SET_NEW_CAPACITY + "{}".format(year)] = Total_Capacity
+                self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'PVcapacity'  + "{}".format(year)] = PV_Capacity[0]
+                self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'GenSetcapacity'  + "{}".format(year)] = GenSet_Capacity[0]
+                self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'Batterycapacity'  + "{}".format(year)] = Battery_Capacity[0]
+                
     def calc_summaries(self, df_summary, technologies, year):
 
         """The next section calculates the summaries for technology split,

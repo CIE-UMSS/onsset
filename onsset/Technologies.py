@@ -123,7 +123,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 base_to_peak_load_ratio=0.9,
                                 tech_life=20,
                                 om_costs=0.02,
-                                capital_cost={float("inf"): 3500},
+                                capital_cost={float("inf"): 35000},
                                 mini_grid=True,
                                 name = 'MG_PV_Highlands',
                                 code = 5)
@@ -136,7 +136,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 base_to_peak_load_ratio = 0.5,
                                 tech_life = 20,
                                 om_costs = 0.01,
-                                capital_cost = {float("inf"): 3000},
+                                capital_cost = {float("inf"): 30000},
                                 mini_grid = True,
                                 name = 'MG_PV_Amazonia',
                                 code = 5)
@@ -149,7 +149,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                 base_to_peak_load_ratio = 0.5,
                                 tech_life = 20,
                                 om_costs = 0.01,
-                                capital_cost = {float("inf"): 3000},
+                                capital_cost = {float("inf"): 30000},
                                 mini_grid = True,
                                 name = 'MG_PV_Chaco',
                                 code = 5)
@@ -159,11 +159,11 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     sa_pv_calc = Technology(base_to_peak_load_ratio = 0.9,
                                 tech_life = 15,
                                 om_costs = 0.02,
-                                capital_cost={float("inf"): 5070 * pv_capital_cost_adjust,
-                                              0.200: 5780 * pv_capital_cost_adjust,
-                                              0.100: 7660 * pv_capital_cost_adjust,
-                                              0.050: 11050 * pv_capital_cost_adjust,
-                                              0.020: 20000 * pv_capital_cost_adjust
+                                capital_cost={float("inf"): 50700 * pv_capital_cost_adjust,
+                                              0.200: 57800 * pv_capital_cost_adjust,
+                                              0.100: 76600 * pv_capital_cost_adjust,
+                                              0.050: 110500 * pv_capital_cost_adjust,
+                                              0.020: 200000 * pv_capital_cost_adjust
                                               },
                                 standalone=True,
                                 name = 'SA_PV_Highlands',
@@ -174,11 +174,11 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     sa_pv_calc1 = Technology(base_to_peak_load_ratio=0.8,
                                 tech_life=20,
                                 om_costs=0.01,
-                                capital_cost={float("inf"): 6070 * pv_capital_cost_adjust,
-                                              0.200: 8780 * pv_capital_cost_adjust,
-                                              0.100: 10660 * pv_capital_cost_adjust,
-                                              0.050: 12050 * pv_capital_cost_adjust,
-                                              0.020: 15000 * pv_capital_cost_adjust
+                                capital_cost={float("inf"): 60700 * pv_capital_cost_adjust,
+                                              0.200: 87800 * pv_capital_cost_adjust,
+                                              0.100: 106600 * pv_capital_cost_adjust,
+                                              0.050: 120500 * pv_capital_cost_adjust,
+                                              0.020: 150000 * pv_capital_cost_adjust
                                               },
                                 standalone=True,
                                 name = 'SA_PV_Amazonia',
@@ -190,11 +190,11 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     sa_pv_calc2 = Technology(base_to_peak_load_ratio=0.8,
                                 tech_life=20,
                                 om_costs=0.04,
-                                capital_cost={float("inf"): 6070 * pv_capital_cost_adjust,
-                                              0.200: 8780 * pv_capital_cost_adjust,
-                                              0.100: 10660 * pv_capital_cost_adjust,
-                                              0.050: 12050 * pv_capital_cost_adjust,
-                                              0.020: 15000 * pv_capital_cost_adjust
+                                capital_cost={float("inf"): 60700 * pv_capital_cost_adjust,
+                                              0.200: 87800 * pv_capital_cost_adjust,
+                                              0.100: 106600 * pv_capital_cost_adjust,
+                                              0.050: 120500 * pv_capital_cost_adjust,
+                                              0.020: 150000 * pv_capital_cost_adjust
                                               },
                                 standalone=True,
                                 name = 'SA_PV_Chaco',
@@ -209,7 +209,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.7,
                                     tech_life=15,
                                     om_costs=0.1,
-                                    capital_cost={float("inf"): 1000},
+                                    capital_cost={float("inf"): 10000},
                                     mini_grid=True,
                                     name = 'MG_Diesel_Highlands',
                                     code = 4)
@@ -223,7 +223,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.08,
-                                    capital_cost={float("inf"): 1500},
+                                    capital_cost={float("inf"): 15000},
                                     mini_grid=True,
                                     name = 'MG_Diesel_Amazonia',
                                     code = 4)
@@ -237,7 +237,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.08,
-                                    capital_cost={float("inf"): 1500},
+                                    capital_cost={float("inf"): 15000},
                                     mini_grid=True,
                                     name = 'MG_Diesel_Chaco',
                                     code = 4)
@@ -248,7 +248,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.6,
                                     tech_life=20,
                                     om_costs=0.05,
-                                    capital_cost={float("inf"): 1200},
+                                    capital_cost={float("inf"): 12000},
                                     standalone=True,
                                     name = 'SA_Diesel_Highlands',
                                     code = 2)
@@ -259,7 +259,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.6,
                                     tech_life=20,
                                     om_costs=0.05,
-                                    capital_cost={float("inf"): 1200},
+                                    capital_cost={float("inf"): 12000},
                                     standalone=True,
                                     name = 'SA_Diesel_Amazonia',
                                     code = 2)
@@ -270,7 +270,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.05,
-                                    capital_cost={float("inf"): 1200},
+                                    capital_cost={float("inf"): 12000},
                                     standalone=True,
                                     name = 'SA_Diesel_Chaco',
                                     code = 2)
@@ -280,40 +280,47 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     
     surrogate_model_1 = {'name': 'MG_Hybrid_Chaco',
-                         'path_LCOE': 'Bolivia/Surrogate_Models/Demand/LCOE_Chaco.joblib' ,
-                         'path_NPC': 'Bolivia/Surrogate_Models/Demand/NPC_Chaco.joblib', 
-                         'Variables' : 1,
-                         'Var_1' : 'Renewable Invesment Cost',
-                         'value_1': 1500
-                         'Var_2' : 'Battery Unitary Invesment Cost',
-                         'value_2': 600
-                         'Var_3' : 'Deep of Discharge',
-                         'value_3': 0.2
-                         'Var_4' : 'Battery Cycles',
-                         'value_4': 5500
-                         'Var_5' : 'Generator Efficiency',
-                         'value_5': 0.34
-                         'Var_6' : 'Low Heating Value',
-                         'value_6': 9.9,
-                         'Var_7' : 'Fuel Cost',
-                         'Var_8' : 'HouseHolds',
-                         'Var_9' : 'Renewable Energy Unit Total',
-                         'value_9': 'PV total output'}                                }
-    
+                         'path_LCOE': 'Bolivia/Surrogate_Models/Hybrid/LCOE_Chaco.joblib' ,
+                         'path_NPC': 'Bolivia/Surrogate_Models/Hybrid/NPC_Chaco.joblib', 
+                         'path_Investment' : 'Bolivia/Surrogate_Models/Hybrid/NPC_Chaco.joblib',
+                         'path_PV_Capacity': 'Bolivia/Surrogate_Models/Hybrid/PV_Chaco.joblib' ,
+                         'path_Genset_Capacity': 'Bolivia/Surrogate_Models/Hybrid/Genset_Chaco.joblib' ,
+                         'path_Battery_Capacity': 'Bolivia/Surrogate_Models/Hybrid/Battery_Chaco.joblib',
+                         'Variables' : 10,
+                         'var_1' : 'Renewable Invesment Cost',
+                         'value_1': 1000,
+                         'var_2' : 'Battery Unitary Invesment Cost',
+                         'value_2': 300,
+                         'var_3' : 'Deep of Discharge',
+                         'value_3': 0.02,
+                         'var_4' : 'Battery Cycles',
+                         'value_4': 7000,
+                         'var_5':'GenSet Unitary Invesment Cost',
+                         'value_5': 1000,
+                         'var_6' : 'Generator Efficiency',
+                         'value_6': 0.39,
+                         'var_7' : 'Low Heating Value',
+                         'value_7': 11,
+                         'var_8' : 'Fuel Cost',
+                         'var_9' : 'HouseHolds',
+                         'var_10' : 'Renewable Energy Unit Total',
+                         'value_10': 'PV total output'}                                   
     
     
     mg_hybrid_calc = Technology(om_of_td_lines=0.05,
-                                 distribution_losses=0.07,
+                                 distribution_losses=0.00,
                                  connection_cost_per_hh=100,
                                  base_to_peak_load_ratio=0.5,
                                  capacity_factor=0.8,
-                                 tech_life=20,
+                                 tech_life=10,
                                  om_costs=0.08,
                                  capital_cost={float("inf"): 1500},
                                  mini_grid=True,
                                  name = 'MG_Hybrid_Chaco',
                                  code = 8,
-                                 path = 'Bolivia/Surrogate_Models/Hybrid/NPC_Amazonia.joblib')
+                                 surrogate_model = True,
+                                 surrogate_model_data = surrogate_model_1,
+                                 tech_life_surrogate = 20)
     
     technologies.append(mg_hybrid_calc)
     

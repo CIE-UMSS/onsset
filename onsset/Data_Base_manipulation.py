@@ -9,6 +9,7 @@ Created on Tue Apr 14 21:34:50 2020
 import pandas as pd
 from random import shuffle
 import numpy as np
+import random
 
 #%%
 data = pd.read_csv('Bolivia/Database_new.csv')  
@@ -75,6 +76,10 @@ for i in data.index:
 
 data.to_csv('Bolivia/Database_new_3.csv')
 
+
+data['PV total output'] = np.random.uniform(low=500, high=600, size=(len(data.index),))
+data.to_csv('Bolivia/Database_new_4.csv')
+
 #%%
 
 # analize the ElecStart/ not done yet
@@ -113,7 +118,7 @@ data['ElecPopCalib'] = data['ElecPopCalib']*Modificator
 data.to_csv('Bolivia/Database_lower_ElecPopCalib.csv')
 
 
-
+#%%
 
 
 
