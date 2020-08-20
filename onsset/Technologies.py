@@ -525,38 +525,68 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     demand_constraints.append({'name': 'Amazonia',
                                'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
+                               'constraints': 3,
+                               'Type_1': 'minor',
+                               'Column_name_1': 'Elevation',
+                               'bound_1'      : 800, 
+                               'Type_2': 'mayor',
+                               'Column_name_2': 'HouseHolds mayor',
+                               'bound_2'      : 50, 
+                               'Type_3': 'minor',
+                               'Column_name_3': 'HouseHolds minor',
+                               'bound_3'      : 550, 
+                               'Variables' : 1,
+                               'Var_1' : 'HouseHolds'
+                                })
+    
+    demand_constraints.append({'name': 'Amazonia minor',
+                               'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
+                               'constraints': 2,
+                               'Type_1': 'minor',
+                               'Column_name_1': 'Elevation',
+                               'bound_1'      : 800, 
+                               'Type_2': 'minor',
+                               'Column_name_2': 'HouseHolds minor',
+                               'bound_2'      : 50, 
+                               'Variables' : 1,
+                               'Var_1' : 'HouseHolds'
+                                })
+
+    demand_constraints.append({'name': 'Amazonia mayor',
+                               'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
                                'constraints': 2,
                                'Type_1': 'minor',
                                'Column_name_1': 'Elevation',
                                'bound_1'      : 800, 
                                'Type_2': 'mayor',
-                               'Column_name_2': 'Y_deg',
-                               'bound_2'      : -17, 
+                               'Column_name_2': 'HouseHolds mayor',
+                               'bound_2'      : 550, 
                                'Variables' : 1,
-                               'Var_1' : 'HouseHolds'
-                                })
+                               'Var_1' : 'HouseHolds'                               
+                                })    
     
-    demand_constraints.append({'name': 'Chaco',
-                               'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Chaco.joblib',
-                               'constraints': 2,
-                               'Type_1': 'minor',
-                               'Column_name_1': 'Y_deg',
-                               'bound_1'      : 800, 
-                               'Type_2': 'minor',
-                               'Column_name_2': 'Y_deg',
-                               'bound_2'      : -17, 
-                               'Variables' : 1,
-                               'Var_1' : 'HouseHolds'
-                                })
+    
+    # demand_constraints.append({'name': 'Chaco',
+    #                             'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Chaco.joblib',
+    #                             'constraints': 2,
+    #                             'Type_1': 'minor',
+    #                             'Column_name_1': 'Y_deg',
+    #                             'bound_1'      : 800, 
+    #                             'Type_2': 'minor',
+    #                             'Column_name_2': 'Y_deg',
+    #                             'bound_2'      : -17, 
+    #                             'Variables' : 1,
+    #                             'Var_1' : 'HouseHolds'
+    #                             })
     
     demand_constraints.append({'name': 'Highlands',
-                               'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_HighLands.joblib',
-                               'constraints': 1,
-                               'Type_1': 'mayor',
-                               'Column_name_1': 'Elevation',
-                               'bound_1'      : 800, 
-                               'Variables' : 1,
-                               'Var_1' : 'HouseHolds'
+                                'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_HighLands.joblib',
+                                'constraints': 1,
+                                'Type_1': 'mayor',
+                                'Column_name_1': 'Elevation',
+                                'bound_1'      : 800, 
+                                'Variables' : 1,
+                                'Var_1' : 'HouseHolds'
                                 })
     
     return technologies, transportation_cost, tech_constraints, demand_constraints

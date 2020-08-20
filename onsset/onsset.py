@@ -1917,12 +1917,25 @@ class SettlementProcessor:
                 value = i['bound_' + str(j)]
                 
                 if Type == 'minor':
-                    
-                   df[column_name] =  value > self.df[column_name]  
+                   
+                   if column_name == 'HouseHolds minor':
+                       
+                       df[column_name] =  value > self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH'] 
+                       
+                   else :
+                       
+                       df[column_name] =  value > self.df[column_name]  
                 
                 elif Type == 'mayor':
-            
-                   df[column_name] =  value <= self.df[column_name] 
+                    
+                    
+                   if column_name == 'HouseHolds mayor':
+                       
+                       df[column_name] =  value <= self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH']
+                       
+                   else:
+                       
+                       df[column_name] =  value <= self.df[column_name] 
                 
             df['result'] = df.all(axis=1)    
                 
@@ -1953,7 +1966,7 @@ class SettlementProcessor:
             
             self.df[SET_TOTAL_ENERGY_PER_CELL] = np.where(df['result'].values, demand_2[0].values, 
                                                                        self.df[SET_TOTAL_ENERGY_PER_CELL].values)
-            self.df.loc[df['result'], 'Demand_Name'] = name
+            self.df.loc[df['result'], 'Demand_Name'+ "{}".format(year)] = name
             
             
             
