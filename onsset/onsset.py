@@ -2200,11 +2200,22 @@ class SettlementProcessor:
         
                 if Type == 'minor':
                     
-                   self.df.loc[self.df[column_name] >= value, name + "{}".format(year)] = 99
+                   if column_name == 'HouseHolds':
+                       HouseHolds = self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH'] 
+                       self.df.loc[HouseHolds >= value, name + "{}".format(year)] = 99
+                   else:
+                       self.df.loc[self.df[column_name] >= value, name + "{}".format(year)] = 99
                 
                 elif Type == 'mayor':
+                    
+                   if column_name == 'HouseHolds':
+                       
+                       HouseHolds = self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH'] 
+                       self.df.loc[HouseHolds < value, name + "{}".format(year)] = 99
+                   
+                   else:
             
-                   self.df.loc[self.df[column_name] < value, name + "{}".format(year)] = 99
+                       self.df.loc[self.df[column_name] < value, name + "{}".format(year)] = 99
             else:
                 
                 self.df[name + "{}".format(year)] = 99

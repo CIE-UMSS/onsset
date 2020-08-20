@@ -400,12 +400,21 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                              'Years'      :  [2020,2030]
                                 })
     
-    tech_constraints.append({'Type': 'mayor',
+    tech_constraints.append({'Type': 'minor',
                              'name': 'MG_Diesel_Amazonia',
-                             'Column_name': 'Y_deg', 
-                             'bound'      : -17, 
+                             'Column_name': 'HouseHolds', 
+                             'bound'      : 550, 
                              'Years'      :  [2020,2030]                          
                                 })
+    
+    tech_constraints.append({'Type': 'mayor',
+                             'name':'MG_Diesel_Amazonia',
+                             'Column_name':'HouseHolds', 
+                             'bound'      : 50, 
+                             'Years'      :  [2020,2030]                          
+                                })
+    
+    
     
 
     tech_constraints.append({'Type'       : 'minor',
