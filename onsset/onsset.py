@@ -58,6 +58,7 @@ SET_MIN_OVERALL_CODE = 'MinimumOverallCode'  # And a code from 1 - 7 to represen
 SET_MIN_CATEGORY = 'MinimumCategory'  # The category with minimum lcoe (grid, minigrid or standalone)
 SET_NEW_CAPACITY = 'NewCapacity'  # Capacity in kW
 SET_INVESTMENT_COST = 'InvestmentCost'  # The investment cost in USD
+SET_INVESTMENT_NPC = 'NPC' # The Net present cost in USD
 SET_CONFLICT = "Conflict"
 SET_ELEC_ORDER = "ElectrificationOrder"
 SET_LIMIT = "ElecStatusIn"
@@ -359,11 +360,12 @@ class Technology:
             lcoe = np.sum(discounted_costs, axis=1) / np.sum(discounted_generation, axis=1)
             lcoe = pd.DataFrame(lcoe[:, np.newaxis])
             investment_cost = pd.DataFrame(investment_cost[:, np.newaxis])
-    
+            NPC_new = np.sum(discounted_costs, axis=1)
+            NPC_new = pd.DataFrame(NPC_new)
             if get_investment_cost:
                 return investment_cost
             else:
-                return lcoe, investment_cost
+                return lcoe, investment_cost, NPC_new
             
             
         elif self.surrogate_model == True:
@@ -431,7 +433,11 @@ class Technology:
             lcoe_td = pd.DataFrame(lcoe_td)
             
             if step == 0:
-
+                NPC_1 = pd.DataFrame(NPC_function.predict(independant_variables))
+                NPC_td = pd.DataFrame(np.sum(discounted_costs, axis=1))
+                NPC_new = NPC_1 + NPC_td
+                
+                
                 lcoe = lcoe + lcoe_td
                 
                 discounted_investments_td = np.sum(discounted_investments_td, axis=1)
@@ -441,7 +447,7 @@ class Technology:
                 if get_investment_cost:
                     return investment_cost
                 else:
-                    return lcoe, investment_cost
+                    return lcoe, investment_cost, NPC_new
             else:
                 
                 NPC = pd.DataFrame(NPC_function.predict(independant_variables))
@@ -463,11 +469,13 @@ class Technology:
                 investment_technology_new = investment_technology/discount_factor[step]
                 investment_cost = discounted_investments_td + investment_technology_new
                 
+                NPC_td = pd.DataFrame(np.sum(discounted_costs, axis=1))
+                NPC_new_1 = NPC_new + NPC_td
                 
                 if get_investment_cost:
                     return investment_cost
                 else:
-                    return lcoe, investment_cost
+                    return lcoe, investment_cost, NPC_new_1
 
 
     def transmission_network(self, peak_load, additional_mv_line_length=0, additional_transformer=0,
@@ -1461,13 +1469,20 @@ class SettlementProcessor:
 
         logging.info('Define the initial electrification status')
         grid_investment = np.zeros(len(self.df[SET_X_DEG]))
+        grid_NPC =np.zeros(len(self.df[SET_X_DEG]))
+        
         prev_code = self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)].copy(deep=True)
 
         # Grid-electrified settlements
-        electrified_loce, electrified_investment = self.get_grid_lcoe(0, 0, 0, year, time_step, end_year, grid_calc)
+        electrified_loce, electrified_investment, electrified_NPC = self.get_grid_lcoe(0, 0, 0, year, time_step, end_year, grid_calc)
         electrified_investment = electrified_investment[0]
+        electrified_NPC = electrified_NPC[0]
         grid_investment = np.where(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] == 'Grid' + "{}".format(year - time_step),
                                    electrified_investment, grid_investment)
+        grid_NPC = np.where(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] == 'Grid' + "{}".format(year - time_step),
+                                   electrified_NPC, grid_NPC)
+        
+        
 
         self.df[SET_LCOE_GRID + "{}".format(year)] = 99
         self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] == 'Grid' + "{}".format(year - time_step),
@@ -1486,7 +1501,7 @@ class SettlementProcessor:
         grid_connect_limit -= sum(self.df.loc[prev_code == 'Grid'+ "{}".format(year - time_step)]['Densification_connections'])
         del self.df['Densification_connections']
 
-        return pd.Series(grid_investment), grid_capacity_limit, grid_connect_limit
+        return pd.Series(grid_investment), grid_capacity_limit, grid_connect_limit, pd.Series(grid_NPC)
 
     def current_mv_line_dist(self):
         logging.info('Determine current MV line length')
@@ -1495,7 +1510,7 @@ class SettlementProcessor:
         self.df[SET_MIN_TD_DIST] = self.df[[SET_MV_DIST_PLANNED, SET_HV_DIST_PLANNED]].min(axis=1)
 
     def elec_extension(self, grid_calc, max_dist, year, start_year, end_year, time_step, grid_capacity_limit,
-                       grid_connect_limit, new_investment, auto_intensification=0, prioritization=0):
+                       grid_connect_limit, new_investment, new_NPC, auto_intensification=0, prioritization=0):
         """
         Iterate through all electrified settlements and find which settlements can be economically connected to the grid
         Repeat with newly electrified settlements until no more are added
@@ -1523,7 +1538,7 @@ class SettlementProcessor:
         if (prio == 2) or (prio == 4):
             mv_dist_adjusted = np.nan_to_num(grid_penalty_ratio * mv_planned)
 
-            intensification_lcoe, intensification_investment = \
+            intensification_lcoe, intensification_investment, intensification_NPC = \
                 self.get_grid_lcoe(dist_adjusted=mv_dist_adjusted, elecorder=0, additional_transformer=0, year=year,
                                    time_step=time_step, end_year=end_year, grid_calc=grid_calc)
             intensification_lcoe = new_lcoes.copy(deep=True)
@@ -1532,19 +1547,21 @@ class SettlementProcessor:
             intensification_lcoe.columns = [0]
 
             grid_capacity_limit, grid_connect_limit, cell_path_real, cell_path_adjusted, elecorder, electrified, \
-                new_lcoes, new_investment \
+                new_lcoes, new_investment, new_NPC \
                 = self.update_grid_extension_info(grid_lcoe=intensification_lcoe, dist=mv_planned,
                                                   dist_adjusted=mv_dist_adjusted, prev_dist=0, elecorder=elecorder,
                                                   new_elec_order=1, max_dist=max_dist, new_lcoes=new_lcoes,
                                                   grid_capacity_limit=grid_capacity_limit,
                                                   grid_connect_limit=grid_connect_limit, cell_path_real=cell_path_real,
-                                                  cell_path_adjusted=cell_path_adjusted, electrified=electrified,
-                                                  year=year, grid_calc=grid_calc,
-                                                  grid_investment=intensification_investment,
-                                                  new_investment=new_investment)
+                                                  cell_path_adjusted = cell_path_adjusted, electrified = electrified,
+                                                  year=year, grid_calc = grid_calc,
+                                                  grid_investment = intensification_investment,
+                                                  new_investment = new_investment,
+                                                  grid_NPC = intensification_NPC,
+                                                  new_NPC = new_NPC)
 
         # Find the unelectrified settlements where grid can be less costly than off-grid
-        filter_lcoe, filter_investment = self.get_grid_lcoe(0, 0, 0, year, time_step, end_year, grid_calc)
+        filter_lcoe, filter_investment, filter_NPC = self.get_grid_lcoe(0, 0, 0, year, time_step, end_year, grid_calc)
         filter_lcoe = filter_lcoe[0]
         filter_lcoe.loc[electrified == 1] = 99
         unelectrified = np.where(filter_lcoe < min_code_lcoes)
@@ -1556,37 +1573,40 @@ class SettlementProcessor:
         mv_dist = pd.Series(self.df[SET_MV_DIST_PLANNED])
         mv_dist_adjusted = np.nan_to_num(grid_penalty_ratio * mv_dist)
 
-        grid_lcoe, grid_investment = self.get_grid_lcoe(dist_adjusted=mv_dist_adjusted, elecorder=0,
+        grid_lcoe, grid_investment, grid_NPC = self.get_grid_lcoe(dist_adjusted=mv_dist_adjusted, elecorder=0,
                                                         additional_transformer=0, year=year, time_step=time_step,
                                                         end_year=end_year, grid_calc=grid_calc)
 
         grid_capacity_limit, grid_connect_limit, cell_path_real, cell_path_adjusted, elecorder, electrified, \
-            new_lcoes, new_investment \
+            new_lcoes, new_investment, new_NPC \
             = self.update_grid_extension_info(grid_lcoe=grid_lcoe, dist=mv_dist, dist_adjusted=mv_dist_adjusted,
                                               prev_dist=0, elecorder=elecorder, new_elec_order=1, max_dist=max_dist,
                                               new_lcoes=new_lcoes, grid_capacity_limit=grid_capacity_limit,
                                               grid_connect_limit=grid_connect_limit, cell_path_real=cell_path_real,
                                               cell_path_adjusted=cell_path_adjusted, electrified=electrified, year=year,
                                               grid_calc=grid_calc, grid_investment=grid_investment,
-                                              new_investment=new_investment)
+                                              new_investment=new_investment,
+                                              grid_NPC = intensification_NPC,
+                                              new_NPC = new_NPC)
 
         #  Second round of extension from HV lines
         hv_dist = np.nan_to_num(self.df[SET_HV_DIST_PLANNED])
         hv_dist_adjusted = np.nan_to_num(hv_dist * grid_penalty_ratio)
 
-        grid_lcoe, grid_investment = self.get_grid_lcoe(dist_adjusted=hv_dist_adjusted, elecorder=0,
+        grid_lcoe, grid_investment, grid_NPC = self.get_grid_lcoe(dist_adjusted=hv_dist_adjusted, elecorder=0,
                                                         additional_transformer=1, year=year, time_step=time_step,
                                                         end_year=end_year, grid_calc=grid_calc)
 
         grid_capacity_limit, grid_connect_limit, cell_path_real, cell_path_adjusted, elecorder, electrified, \
-            new_lcoes, new_investment \
+            new_lcoes, new_investment, new_NPC \
             = self.update_grid_extension_info(grid_lcoe=grid_lcoe, dist=hv_dist, dist_adjusted=hv_dist_adjusted,
                                               prev_dist=0, elecorder=elecorder, new_elec_order=1, max_dist=999999,
                                               new_lcoes=new_lcoes, grid_capacity_limit=grid_capacity_limit,
                                               grid_connect_limit=grid_connect_limit, cell_path_real=cell_path_real,
                                               cell_path_adjusted=cell_path_adjusted, electrified=electrified,
                                               year=year, grid_calc=grid_calc, grid_investment=grid_investment,
-                                              new_investment=new_investment)
+                                              new_investment=new_investment,  grid_NPC = intensification_NPC,
+                                              new_NPC = new_NPC)
 
         # Third to last round of extension loops from electrified settlements. First considering all
         # electrified settlements up until this point, then from the newly electrified settlements in each round
@@ -1606,14 +1626,14 @@ class SettlementProcessor:
                     self.closest_electrified_settlement(new_electrified, unelectrified, cell_path_real,
                                                         grid_penalty_ratio, elecorder)
 
-                grid_lcoe, grid_investment = self.get_grid_lcoe(dist_adjusted=nearest_dist_adjusted,
+                grid_lcoe, grid_investment, grid_NPC = self.get_grid_lcoe(dist_adjusted=nearest_dist_adjusted,
                                                                 elecorder=nearest_elec_order,
                                                                 additional_transformer=0, year=year,
                                                                 time_step=time_step,
                                                                 end_year=end_year, grid_calc=grid_calc)
 
                 grid_capacity_limit, grid_connect_limit, cell_path_real, cell_path_adjusted, elecorder, electrified, \
-                    new_lcoes, new_investment = \
+                    new_lcoes, new_investment, new_NPC = \
                     self.update_grid_extension_info(grid_lcoe=grid_lcoe, dist=nearest_dist,
                                                     dist_adjusted=nearest_dist_adjusted,
                                                     prev_dist=prev_dist, elecorder=elecorder,
@@ -1623,12 +1643,13 @@ class SettlementProcessor:
                                                     cell_path_real=cell_path_real,
                                                     cell_path_adjusted=cell_path_adjusted, electrified=electrified,
                                                     year=year, grid_calc=grid_calc, grid_investment=grid_investment,
-                                                    new_investment=new_investment)
+                                                    new_investment=new_investment, grid_NPC = grid_NPC,
+                                                    new_NPC = new_NPC)
 
-        return new_lcoes, cell_path_adjusted, elecorder, cell_path_real, pd.DataFrame(new_investment)
+        return new_lcoes, cell_path_adjusted, elecorder, cell_path_real, pd.DataFrame(new_investment), pd.DataFrame(new_NPC)
 
     def get_grid_lcoe(self, dist_adjusted, elecorder, additional_transformer, year, time_step, end_year, grid_calc):
-        grid_lcoe, grid_investment = \
+        grid_lcoe, grid_investment, grid_NPC = \
             grid_calc.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                start_year=year - time_step,
                                end_year=end_year,
@@ -1641,7 +1662,7 @@ class SettlementProcessor:
                                additional_mv_line_length=dist_adjusted,
                                elec_loop=elecorder,
                                additional_transformer=additional_transformer)
-        return grid_lcoe, grid_investment
+        return grid_lcoe, grid_investment, grid_NPC
 
     def closest_electrified_settlement(self, new_electrified, unelectrified, cell_path_real, grid_penalty_ratio,
                                        elecorder):
@@ -1692,12 +1713,14 @@ class SettlementProcessor:
 
     def update_grid_extension_info(self, grid_lcoe, dist, dist_adjusted, prev_dist, elecorder, new_elec_order,
                                    max_dist, new_lcoes, grid_capacity_limit, grid_connect_limit, cell_path_real,
-                                   cell_path_adjusted, electrified, year, grid_calc, grid_investment, new_investment):
+                                   cell_path_adjusted, electrified, year, grid_calc, grid_investment, new_investment,
+                                   grid_NPC, new_NPC):
 
         min_code_lcoes = self.df[SET_MIN_OFFGRID_LCOE + "{}".format(year)].copy(deep=True)
 
         grid_lcoe = grid_lcoe[0]
         grid_investment = grid_investment[0]
+        grid_NPC = grid_NPC[0]
         grid_lcoe.loc[electrified == 1] = 99
         grid_lcoe.loc[prev_dist + dist_adjusted > max_dist] = 99
         grid_lcoe.loc[grid_lcoe > new_lcoes] = 99
@@ -1723,9 +1746,11 @@ class SettlementProcessor:
         electrified = np.where(grid_lcoe < min_code_lcoes, 1, electrified)
         new_lcoes = np.where(grid_lcoe < min_code_lcoes, grid_lcoe, new_lcoes)
         new_investment = np.where(grid_lcoe < min_code_lcoes, grid_investment, new_investment)
-
+        new_NPC = np.where(grid_lcoe < min_code_lcoes, grid_NPC, new_NPC)
+        
+        
         return grid_capacity_limit, grid_connect_limit, cell_path_real, cell_path_adjusted, elecorder, \
-            electrified, new_lcoes, new_investment
+            electrified, new_lcoes, new_investment, new_NPC
 
     @staticmethod
     def haversine_vector(lon1, lat1, lon2, lat2):
@@ -2067,13 +2092,14 @@ class SettlementProcessor:
 
         """
         isolated_invesments = pd.DataFrame(index=self.df.index)
+        isolated_NPC = pd.DataFrame(index=self.df.index)
         for i in technologies[1:]:               
                 
             if i.code == 2:
                 
                 logging.info('Calculate standalone diesel LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)] = \
-                i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)]= i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                             start_year=year - time_step,
                                             end_year=end_year,
                                             people=self.df[SET_POP + "{}".format(year)],
@@ -2088,8 +2114,8 @@ class SettlementProcessor:
             elif i.code == 3:
                 
                 logging.info('Calculate standalone PV LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)] = \
-                i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                     start_year=year - time_step,
                                     end_year=end_year,
                                     people=self.df[SET_POP + "{}".format(year)],
@@ -2104,8 +2130,8 @@ class SettlementProcessor:
             elif i.code == 4:
                 
                 logging.info('Calculate minigrid diesel LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)] = \
-                    i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                             start_year=year - time_step,
                                             end_year=end_year,
                                             people=self.df[SET_POP + "{}".format(year)],
@@ -2119,8 +2145,8 @@ class SettlementProcessor:
             elif i.code == 5:
                 
                 logging.info('Calculate minigrid PV LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)] = \
-                    i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                     start_year=year - time_step,
                                     end_year=end_year,
                                     people=self.df[SET_POP + "{}".format(year)],
@@ -2135,8 +2161,8 @@ class SettlementProcessor:
             elif i.code == 6:
                 
                 logging.info('Calculate minigrid wind LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)] = \
-                i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name+ "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                       start_year=year - time_step,
                                       end_year=end_year,
                                       people=self.df[SET_POP + "{}".format(year)],
@@ -2148,11 +2174,12 @@ class SettlementProcessor:
                                       capacity_factor=self.df[SET_WINDCF])
                 self.df.loc[self.df[SET_WINDCF] <= 0.1, i.name + "{}".format(year)] = 99
                 isolated_invesments[i.name + "{}".format(year)] = isolated_invesments[i.name+ "{}".format(year)].fillna(99999999999999999999999999)
+            
             elif i.code == 7:
                 
                 logging.info('Calculate minigrid hydro LCOE')
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name + "{}".format(year)] = \
-                        i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name + "{}".format(year)], \
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                                        start_year=year - time_step,
                                        end_year=end_year,
                                        people=self.df[SET_POP + "{}".format(year)],
@@ -2167,8 +2194,8 @@ class SettlementProcessor:
                 
                 logging.info('Calculate ' +  i.name  +  ' LCOE')
                 X = self.independent_variable_generator(i, year)
-                self.df[i.name + "{}".format(year)], isolated_invesments[i.name + "{}".format(year)] = \
-                i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
+                self.df[i.name + "{}".format(year)], isolated_invesments[i.name + "{}".format(year)],\
+                isolated_NPC[i.name+ "{}".format(year)] = i.get_lcoe(energy_per_cell=self.df[SET_ENERGY_PER_CELL + "{}".format(year)],
                            start_year=year - time_step,
                            end_year=end_year,
                            people=self.df[SET_POP + "{}".format(year)],
@@ -2184,7 +2211,7 @@ class SettlementProcessor:
         self.apply_tech_constraints(tech_constraints, year)
         self.choose_minimum_off_grid_tech(year, technologies)
 
-        return isolated_invesments
+        return isolated_invesments, isolated_NPC
 
     def apply_tech_constraints(self, tech_constraints, year):
         
@@ -2338,12 +2365,13 @@ class SettlementProcessor:
 #            self.df.loc[self.df[SET_MIN_OVERALL + "{}".format(year)] == key,
 #                        SET_MIN_OVERALL_CODE + "{}".format(year)] = codes[key]
 
-    def calculate_investments(self, invesments, year):
+    def calculate_investments_NPC(self, invesments, NPC, year):
 
         logging.info('Calculate investment cost')
 
         List = pd.DataFrame()
         self.df[SET_INVESTMENT_COST + "{}".format(year)] = 0
+        self.df[SET_INVESTMENT_NPC + "{}".format(year)] = 0
         
         for i in invesments.columns:
             List [i] = np.where(self.df[SET_MIN_OVERALL + "{}".format(year)] == i, 1, 0)    
@@ -2351,7 +2379,7 @@ class SettlementProcessor:
         
         for i in invesments.columns:
             self.df[SET_INVESTMENT_COST + "{}".format(year)] += List[i]*invesments[i]
-        
+            self.df[SET_INVESTMENT_NPC + "{}".format(year)] += List[i]*NPC[i]
         
         
     def apply_limitations(self, eleclimit, year, time_step, prioritization, auto_densification=0):

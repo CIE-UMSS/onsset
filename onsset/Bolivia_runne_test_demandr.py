@@ -10,7 +10,7 @@ import numpy as np
 'test only one constraint for the amazonia and highlands'
     
 specs_path = os.path.join('Bolivia', 'specs_paper_new.xlsx')
-calibrated_csv_path = os.path.join('Bolivia', 'Database_new_3.csv')
+calibrated_csv_path = os.path.join('Bolivia', 'Database_new_4.csv')
 results_folder = os.path.join('Bolivia')
 summary_folder	= os.path.join('Bolivia')
   

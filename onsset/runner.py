@@ -215,19 +215,19 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.fuel_cost_columns(transportation_cost, year)
 
-            invesments = onsseter.calculate_off_grid_lcoes(technologies, tech_constraints,year, end_year, time_step)
+            invesments, NPC = onsseter.calculate_off_grid_lcoes(technologies, tech_constraints,year, end_year, time_step)
             
             for i in technologies:
                 if i.code ==1:
                     grid_calc = i
             
             
-            invesments['Grid'+ "{}".format(year)], grid_cap_gen_limit, grid_connect_limit = \
+            invesments['Grid'+ "{}".format(year)], grid_cap_gen_limit, grid_connect_limit, NPC['Grid'+ "{}".format(year)] = \
                 onsseter.pre_electrification(grid_price, year, time_step, end_year, grid_calc, grid_cap_gen_limit,
                                              grid_connect_limit)
 
             onsseter.df[SET_LCOE_GRID + "{}".format(year)], onsseter.df[SET_MIN_GRID_DIST + "{}".format(year)], \
-            onsseter.df[SET_ELEC_ORDER + "{}".format(year)], onsseter.df[SET_MV_CONNECT_DIST], invesments['Grid'+ "{}".format(year)] = \
+            onsseter.df[SET_ELEC_ORDER + "{}".format(year)], onsseter.df[SET_MV_CONNECT_DIST], invesments['Grid'+ "{}".format(year)], NPC['Grid'+ "{}".format(year)] = \
                 onsseter.elec_extension(grid_calc,
                                         max_grid_extension_dist,
                                         year,
@@ -238,12 +238,13 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                         grid_connect_limit,
                                         auto_intensification=auto_intensification,
                                         prioritization=prioritization,
-                                        new_investment=invesments['Grid'+ "{}".format(year)])
+                                        new_investment=invesments['Grid'+ "{}".format(year)],
+                                        new_NPC = NPC['Grid'+ "{}".format(year)])
             
             
             onsseter.results_columns(year, time_step, prioritization, auto_intensification, technologies)
 
-            onsseter.calculate_investments(invesments, year)
+            onsseter.calculate_investments_NPC(invesments, NPC, year)
 
             onsseter.apply_limitations(eleclimit, year, time_step, prioritization, auto_intensification)
 
