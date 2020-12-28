@@ -103,7 +103,7 @@ class Technology:
 
     def __init__(self,
                  tech_life=0,  # in years
-                 base_to_peak_load_ratio=0,
+                 base_to_peak_load_ratio_type=0,
                  distribution_losses=0,  # percentage
                  connection_cost_per_hh=0,  # USD/hh
                  om_costs=0.0,  # OM costs as percentage of capital costs
@@ -128,7 +128,7 @@ class Technology:
 
         self.distribution_losses = distribution_losses
         self.connection_cost_per_hh = connection_cost_per_hh
-        self.base_to_peak_load_ratio = base_to_peak_load_ratio
+        self.base_to_peak_load_ratio_type = base_to_peak_load_ratio_type
         self.tech_life = tech_life
         self.om_costs = om_costs
         self.capital_cost = capital_cost
@@ -476,6 +476,8 @@ class Technology:
                     return investment_cost
                 else:
                     return lcoe, investment_cost, NPC_new_1
+                
+
 
 
     def transmission_network(self, peak_load, additional_mv_line_length=0, additional_transformer=0,
@@ -2052,7 +2054,44 @@ class SettlementProcessor:
         
         
         self.set_sa_communities(technologies, year, time_step,start_year)
+    
+    def peak_load_creation(self, technologies, year):
         
+        
+        for i in technologies:
+            
+            
+            
+            if type(i.base_to_peak_load_ratio_type) == type(9) or type(i.base_to_peak_load_ratio_type) == type(0.1): 
+                
+                i.base_to_peak_load_ratio = i.base_to_peak_load_ratio_type
+                
+            else:
+                
+                print(i.name)
+                X_1 = pd.DataFrame()
+                peak_load_ratio_data = i.base_to_peak_load_ratio_type
+                variables_number = peak_load_ratio_data['Variables']
+                path = peak_load_ratio_data['path_peak_load_ratio']   
+                peak_load_ratio = load(path)               
+
+
+                for n in range(1, variables_number+1):
+                
+                    variable_name = peak_load_ratio_data['var_' + str(n)]
+                    
+                    if variable_name == 'HouseHolds':
+                        
+                        X_1['HouseHoldsEnergyPerCell'] = self.df['NewConnections'  + "{}".format(year)]/self.df['NumPeoplePerHH']
+                    else:
+                        
+                        X_1[variable_name] = self.df[variable_name]
+
+                peak_load_ratio_1 = pd.DataFrame(peak_load_ratio.predict(X_1))
+                i.base_to_peak_load_ratio = peak_load_ratio_1[0]
+                
+                
+    
     def independent_variable_generator(self, technology, year):
         
         surrogate_model_data = technology.surrogate_model_data
@@ -2174,7 +2213,8 @@ class SettlementProcessor:
                                       capacity_factor=self.df[SET_WINDCF])
                 self.df.loc[self.df[SET_WINDCF] <= 0.1, i.name + "{}".format(year)] = 99
                 isolated_invesments[i.name + "{}".format(year)] = isolated_invesments[i.name+ "{}".format(year)].fillna(99999999999999999999999999)
-            
+                isolated_NPC[i.name+ "{}".format(year)] = isolated_NPC[i.name+ "{}".format(year)].fillna(99999999999999999999999999) 
+                
             elif i.code == 7:
                 
                 logging.info('Calculate minigrid hydro LCOE')

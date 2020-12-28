@@ -2,7 +2,7 @@
 from runner import scenario
 import pandas as pd
 import os
-'''Check if the demand if the constraints are applyied for 2020'''
+
 
 
     # 'Database_lower_ElecPopCalib.csv'

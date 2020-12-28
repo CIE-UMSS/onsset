@@ -16,11 +16,16 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                       start_year=start_year,
                                       end_year=end_year,
                                       discount_rate=0.12)
+    Peak_load_ratio_1 = {'name': 'Peak load ratio',
+                         'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib' ,
+                         'Variables' : 1,
+                         'var_1' : 'HouseHolds'}   
 
+     
     grid_calc = Technology(om_of_td_lines=0.02,
                                distribution_losses=float(specs_data.iloc[0]['GridLosses']),
                                connection_cost_per_hh=125,
-                               base_to_peak_load_ratio=float(specs_data.iloc[0]['BaseToPeak']),
+                               base_to_peak_load_ratio_type = float(specs_data.iloc[0]['BaseToPeak']),
                                capacity_factor=1,
                                tech_life=30,
                                grid_capacity_investment=float(specs_data.iloc[0]['GridCapacityInvestmentCost']),
@@ -34,7 +39,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_hydro_calc = Technology(om_of_td_lines=0.02,
                                    distribution_losses=0.05,
                                    connection_cost_per_hh=125,
-                                   base_to_peak_load_ratio=1,
+                                   base_to_peak_load_ratio_type = 1,
                                    capacity_factor=0.5,
                                    tech_life=30,
                                    capital_cost={float("inf"): 5000},
@@ -48,7 +53,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 #    mg_hydro_calc1 = Technology(om_of_td_lines=0.04,
 #                                   distribution_losses=0.03,
 #                                   connection_cost_per_hh=25,
-#                                   base_to_peak_load_ratio=1,
+#                                   base_to_peak_load_ratio_type = 1,
 #                                   capacity_factor=0.6,
 #                                   tech_life=30,
 #                                   capital_cost={float("inf"): 2000},
@@ -63,7 +68,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 #    mg_hydro_calc2 = Technology(om_of_td_lines=0.04,
 #                                   distribution_losses=0.03,
 #                                   connection_cost_per_hh=25,
-#                                   base_to_peak_load_ratio=1,
+#                                   base_to_peak_load_ratio_type = 1,
 #                                   capacity_factor=0.6,
 #                                   tech_life=30,
 #                                   capital_cost={float("inf"): 1500},
@@ -79,7 +84,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_wind_calc = Technology(om_of_td_lines=0.02,
                                   distribution_losses=0.05,
                                   connection_cost_per_hh=125,
-                                  base_to_peak_load_ratio=0.75,
+                                  base_to_peak_load_ratio_type = 0.75,
                                   capital_cost={float("inf"): 2500},
                                   om_costs=0.02,
                                   tech_life=20,
@@ -92,7 +97,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 #    mg_wind_calc1 = Technology(om_of_td_lines = 0.02,
 #                                  distribution_losses = 0.05,
 #                                  connection_cost_per_hh = 225,
-#                                  base_to_peak_load_ratio = 0.55,
+#                                  base_to_peak_load_ratio_type = 0.55,
 #                                  capital_cost={float("inf"): 2000},
 #                                  om_costs=0.01,
 #                                  tech_life=15,
@@ -106,7 +111,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 #    mg_wind_calc2 = Technology(om_of_td_lines = 0.02,
 #                                  distribution_losses = 0.05,
 #                                  connection_cost_per_hh = 225,
-#                                  base_to_peak_load_ratio = 0.55,
+#                                  base_to_peak_load_ratio_type = 0.55,
 #                                  capital_cost={float("inf"): 2500},
 #                                  om_costs=0.01,
 #                                  tech_life=15,
@@ -117,10 +122,10 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 #    technologies.append(mg_wind_calc2)
 
 
-    mg_pv_calc = Technology(om_of_td_lines=0.03,
-                                distribution_losses=0.05,
-                                connection_cost_per_hh=125,
-                                base_to_peak_load_ratio=0.9,
+    mg_pv_calc = Technology(om_of_td_lines = 0.03,
+                                distribution_losses = 0.05,
+                                connection_cost_per_hh = 125,
+                                base_to_peak_load_ratio_type = 0.9,
                                 tech_life=20,
                                 om_costs=0.02,
                                 capital_cost={float("inf"): 35000},
@@ -133,7 +138,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_pv_calc1 = Technology(om_of_td_lines = 0.01,
                                 distribution_losses = 0.03,
                                 connection_cost_per_hh = 225,
-                                base_to_peak_load_ratio = 0.5,
+                                base_to_peak_load_ratio_type = 0.5,
                                 tech_life = 20,
                                 om_costs = 0.01,
                                 capital_cost = {float("inf"): 30000},
@@ -146,7 +151,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_pv_calc2 = Technology(om_of_td_lines = 0.03,
                                 distribution_losses = 0.03,
                                 connection_cost_per_hh = 225,
-                                base_to_peak_load_ratio = 0.5,
+                                base_to_peak_load_ratio_type = 0.5,
                                 tech_life = 20,
                                 om_costs = 0.01,
                                 capital_cost = {float("inf"): 30000},
@@ -156,7 +161,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 
     technologies.append(mg_pv_calc2)    
     
-    sa_pv_calc = Technology(base_to_peak_load_ratio = 0.9,
+    sa_pv_calc = Technology(base_to_peak_load_ratio_type = 0.9,
                                 tech_life = 15,
                                 om_costs = 0.02,
                                 capital_cost={float("inf"): 50700 * pv_capital_cost_adjust,
@@ -171,7 +176,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     technologies.append(sa_pv_calc)
 
-    sa_pv_calc1 = Technology(base_to_peak_load_ratio=0.8,
+    sa_pv_calc1 = Technology(base_to_peak_load_ratio_type=0.8,
                                 tech_life=20,
                                 om_costs=0.01,
                                 capital_cost={float("inf"): 60700 * pv_capital_cost_adjust,
@@ -187,7 +192,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     technologies.append(sa_pv_calc1)
     
     
-    sa_pv_calc2 = Technology(base_to_peak_load_ratio=0.8,
+    sa_pv_calc2 = Technology(base_to_peak_load_ratio_type=0.8,
                                 tech_life=20,
                                 om_costs=0.04,
                                 capital_cost={float("inf"): 60700 * pv_capital_cost_adjust,
@@ -205,7 +210,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_diesel_calc = Technology(om_of_td_lines=0.02,
                                     distribution_losses=0.05,
                                     connection_cost_per_hh=125,
-                                    base_to_peak_load_ratio=0.5,
+                                    base_to_peak_load_ratio_type=0.5,
                                     capacity_factor=0.7,
                                     tech_life=15,
                                     om_costs=0.1,
@@ -219,7 +224,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_diesel_calc1 = Technology(om_of_td_lines=0.03,
                                     distribution_losses=0.07,
                                     connection_cost_per_hh=100,
-                                    base_to_peak_load_ratio=0.5,
+                                    base_to_peak_load_ratio_type=0.5,
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.08,
@@ -233,7 +238,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_diesel_calc2 = Technology(om_of_td_lines=0.05,
                                     distribution_losses=0.07,
                                     connection_cost_per_hh=100,
-                                    base_to_peak_load_ratio=0.5,
+                                    base_to_peak_load_ratio_type=0.5,
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.08,
@@ -244,7 +249,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     technologies.append(mg_diesel_calc2)
 
-    sa_diesel_calc = Technology(base_to_peak_load_ratio=0.8,
+    sa_diesel_calc = Technology(base_to_peak_load_ratio_type=0.8,
                                     capacity_factor=0.6,
                                     tech_life=20,
                                     om_costs=0.05,
@@ -255,7 +260,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     technologies.append(sa_diesel_calc)
     
-    sa_diesel_calc1 = Technology(base_to_peak_load_ratio=0.8,
+    sa_diesel_calc1 = Technology(base_to_peak_load_ratio_type=0.8,
                                     capacity_factor=0.6,
                                     tech_life=20,
                                     om_costs=0.05,
@@ -266,7 +271,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     technologies.append(sa_diesel_calc1)
     
-    sa_diesel_calc2 = Technology(base_to_peak_load_ratio=0.8,
+    sa_diesel_calc2 = Technology(base_to_peak_load_ratio_type=0.8,
                                     capacity_factor=0.8,
                                     tech_life=20,
                                     om_costs=0.05,
@@ -310,7 +315,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_hybrid_calc = Technology(om_of_td_lines=0.05,
                                  distribution_losses=0.00,
                                  connection_cost_per_hh=100,
-                                 base_to_peak_load_ratio=0.5,
+                                 base_to_peak_load_ratio_type= Peak_load_ratio_1,
                                  capacity_factor=0.8,
                                  tech_life=10,
                                  om_costs=0.08,
