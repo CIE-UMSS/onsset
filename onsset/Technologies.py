@@ -16,11 +16,6 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
                                       start_year=start_year,
                                       end_year=end_year,
                                       discount_rate=0.12)
-    Peak_load_ratio_1 = {'name': 'Peak load ratio',
-                         'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib' ,
-                         'Variables' : 1,
-                         'var_1' : 'HouseHolds'}   
-
      
     grid_calc = Technology(om_of_td_lines=0.02,
                                distribution_losses=float(specs_data.iloc[0]['GridLosses']),
@@ -315,7 +310,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     mg_hybrid_calc = Technology(om_of_td_lines=0.05,
                                  distribution_losses=0.00,
                                  connection_cost_per_hh=100,
-                                 base_to_peak_load_ratio_type= Peak_load_ratio_1,
+                                 base_to_peak_load_ratio_type = 'surrogate',#
                                  capacity_factor=0.8,
                                  tech_life=10,
                                  om_costs=0.08,
@@ -539,6 +534,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     demand_constraints.append({'name': 'Amazonia',
                                'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
+                               'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib',
                                'constraints': 3,
                                'Type_1': 'minor',
                                'Column_name_1': 'Elevation',
@@ -555,6 +551,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     demand_constraints.append({'name': 'Amazonia minor',
                                'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
+                               'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib',
                                'constraints': 2,
                                'Type_1': 'minor',
                                'Column_name_1': 'Elevation',
@@ -568,6 +565,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
 
     demand_constraints.append({'name': 'Amazonia mayor',
                                'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_Amazonia.joblib',
+                               'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib',
                                'constraints': 2,
                                'Type_1': 'minor',
                                'Column_name_1': 'Elevation',
@@ -595,6 +593,7 @@ def technology_creation(start_year, end_year, grid_price, specs_data, diesel_pri
     
     demand_constraints.append({'name': 'Highlands',
                                 'path': 'Bolivia/Surrogate_Models/Demand/demand_regression_HighLands.joblib',
+                                'path_peak_load_ratio': 'Bolivia/Surrogate_Models/Hybrid/Peak_to_Base.joblib',
                                 'constraints': 1,
                                 'Type_1': 'mayor',
                                 'Column_name_1': 'Elevation',

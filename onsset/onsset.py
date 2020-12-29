@@ -2055,30 +2055,22 @@ class SettlementProcessor:
         
         self.set_sa_communities(technologies, year, time_step,start_year)
     
-    def peak_load_creation(self, technologies, year):
+    def peak_load_creation(self, demand_constraints, technologies, year):
         
-        
-        for i in technologies:
+        peak_load_ratio_final = pd.DataFrame(index=self.df.index, columns=['Peak load'])
+        for i in demand_constraints:
             
-            
-            
-            if type(i.base_to_peak_load_ratio_type) == type(9) or type(i.base_to_peak_load_ratio_type) == type(0.1): 
-                
-                i.base_to_peak_load_ratio = i.base_to_peak_load_ratio_type
-                
-            else:
-                
-                print(i.name)
+                print(i['name'])
                 X_1 = pd.DataFrame()
-                peak_load_ratio_data = i.base_to_peak_load_ratio_type
-                variables_number = peak_load_ratio_data['Variables']
-                path = peak_load_ratio_data['path_peak_load_ratio']   
+                
+                variables_number =i['Variables']
+                path = i['path_peak_load_ratio']   
                 peak_load_ratio = load(path)               
 
 
                 for n in range(1, variables_number+1):
                 
-                    variable_name = peak_load_ratio_data['var_' + str(n)]
+                    variable_name = i['Var_' + str(n)]
                     
                     if variable_name == 'HouseHolds':
                         
@@ -2088,7 +2080,18 @@ class SettlementProcessor:
                         X_1[variable_name] = self.df[variable_name]
 
                 peak_load_ratio_1 = pd.DataFrame(peak_load_ratio.predict(X_1))
-                i.base_to_peak_load_ratio = peak_load_ratio_1[0]
+                peak_load_ratio_final.loc[self.df['Demand_Name' + str(year)]==i['name'],'Peak load'] = peak_load_ratio_1[0]
+                
+                
+                
+                
+        for j in technologies:
+            
+            if type(j.base_to_peak_load_ratio_type) == type(9) or type(j.base_to_peak_load_ratio_type) == type(0.1): 
+                
+                j.base_to_peak_load_ratio =j.base_to_peak_load_ratio_type
+            else: 
+                j.base_to_peak_load_ratio = peak_load_ratio_final['Peak load'].apply(pd.to_numeric)
                 
                 
     

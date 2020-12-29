@@ -211,9 +211,9 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.set_scenario_variables(year, num_people_per_hh_rural, num_people_per_hh_urban, time_step,
                                             start_year, urban_tier, rural_tier, end_year_pop, productive_demand, 
-                                            technologies, demand_constraints)
+                                            technologies,demand_constraints )
             
-            onsseter.peak_load_creation(technologies, year)
+            onsseter.peak_load_creation(demand_constraints, technologies, year)
 
             onsseter.fuel_cost_columns(transportation_cost, year)
 
