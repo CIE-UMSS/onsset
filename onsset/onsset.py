@@ -2060,7 +2060,7 @@ class SettlementProcessor:
         peak_load_ratio_final = pd.DataFrame(index=self.df.index, columns=['Peak load'])
         for i in demand_constraints:
             
-                print(i['name'])
+                
                 X_1 = pd.DataFrame()
                 
                 variables_number =i['Variables']
@@ -2604,3 +2604,9 @@ class SettlementProcessor:
                                                          (self.df[SET_LIMIT + "{}".format(year)] == 1)]
                                              [SET_INVESTMENT_COST + "{}".format(year)])
 
+        # Investment Summaries
+        for j in technologies:
+            name = '5.NPC_' + j.name                
+            df_summary.loc[name,year] = sum(self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] ==  j.name + "{}".format(year)) &
+                                                         (self.df[SET_LIMIT + "{}".format(year)] == 1)]
+                                             ['NPC' + "{}".format(year)])

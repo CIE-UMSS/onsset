@@ -17,7 +17,7 @@ scenario(specs_path, calibrated_csv_path, results_folder, summary_folder)
 
 #%%    
 data = pd.read_csv('Bolivia/bo-1-0_0_0_0_0_0.csv', index_col=0)  
-
+sumary = pd.read_csv('Bolivia/bo-1-0_0_0_0_0_0_summary.csv', index_col=0)
 df = pd.DataFrame()
 df['EnergyPerSettlement2020'] = data['EnergyPerSettlement2020']
 df['EnergyPerSettlement2030'] = data['EnergyPerSettlement2030']
