@@ -2568,6 +2568,10 @@ class SettlementProcessor:
                 self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'PVcapacity'  + "{}".format(year)] = PV_Capacity[0]
                 self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'GenSetcapacity'  + "{}".format(year)] = GenSet_Capacity[0]
                 self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == i.name + "{}".format(year), 'Batterycapacity'  + "{}".format(year)] = Battery_Capacity[0]
+                self.df['PVcapacity'  + "{}".format(year)] = self.df['PVcapacity'  + "{}".format(year)].fillna(0)
+                self.df['GenSetcapacity'  + "{}".format(year)] =  self.df['GenSetcapacity'  + "{}".format(year)].fillna(0)
+                self.df['Batterycapacity'  + "{}".format(year)] = self.df['Batterycapacity'  + "{}".format(year)].fillna(0)
+                
                 
     def calc_summaries(self, df_summary, technologies, year):
 
